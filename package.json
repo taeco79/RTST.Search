@@ -18,5 +18,8 @@
   "homepage": "https://github.com/taeco79/RTST.Search#readme",
   "dependencies": {
     "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "supervisor": "^0.12.0"
   }
 }
