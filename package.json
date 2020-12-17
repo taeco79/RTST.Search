@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/taeco79/RTST.Search/issues"
   },
-  "homepage": "https://github.com/taeco79/RTST.Search#readme"
+  "homepage": "https://github.com/taeco79/RTST.Search#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
