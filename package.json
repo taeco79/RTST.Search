@@ -1,0 +1,19 @@
+{
+  "name": "search",
+  "version": "0.0.0",
+  "description": "기술매매 대상 수요기업 예측 웹 서비스 프로토타입 개발",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taeco79/RTST.Search.git"
+  },
+  "author": "Shine.Won",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/taeco79/RTST.Search/issues"
+  },
+  "homepage": "https://github.com/taeco79/RTST.Search#readme"
+}
