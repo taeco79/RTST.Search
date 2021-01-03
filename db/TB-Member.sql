@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS `TB-Member` (
+`member` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT
+, `key` CHAR(36) NOT NULL
+, `id` VARCHAR(50) NOT NULL
+, `password` CHAR(64) NULL DEFAULT NULL
+, `name` VARCHAR(50) NULL DEFAULT NULL
+, `update` TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+, `entry` DATETIME NOT NULL
+, PRIMARY KEY(`member`) USING BTREE
+, UNIQUE INDEX`key`(`key`) USING BTREE
+, UNIQUE INDEX`id`(`id`) USING BTREE
+)
+ COLLATE = 'utf8mb4_general_ci'
+ ENGINE = InnoDB;

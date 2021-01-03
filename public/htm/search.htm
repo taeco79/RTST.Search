@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  <link rel="stylesheet" href="/css/search.css" type="text/css">
+  <script src="/js/function.js"></script>
+  <script src="/js/search.js"></script>
+  <script>
+    var SEARCH = ##RESULT##;
+  </script>
+</head>
+
+<body>
+  <form action="/search" method="get">
+    <fieldset>
+      <legend>Search</legend>
+      <input type="text" name="q" placeholder="특허등록번호, 기업코드 또는 사업자등록번호를 입력해 주세요." value="##search##">
+      <input type="submit" value="Search">
+      <span>##Message##</span>
+    </fieldset>
+  </form>
+
+</body>
+
+</html>

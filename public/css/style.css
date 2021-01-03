@@ -1,0 +1,44 @@
+@import url(//fonts.googleapis.com/earlyaccess/notosanskr.css);
+
+* { box-sizing: border-box; font-family: "Noto Sans KR", sans-serif; margin: 0px; padding: 0px; }
+html, body { width: 100%; height: 100%; }
+html { font-size: 16px; }
+body { padding-top: 2.0625rem; }
+ul { padding-left: 1rem; margin: 0px; }
+
+#menu {
+  width: 7rem;
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  z-index: 999;
+  padding: 0px;
+  background-color: #ffffff;
+  border-left: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  border-radius: 0px 0px 0px 0.5rem;
+  text-align: center;
+}
+#menu > li { list-style: none; padding: 0.25rem; }
+#menu .hide { display: none; }
+#menu:hover .hide { display: block; }
+#menu .hide:hover { background-color: #9c9494; }
+#menu a { text-decoration: none; color: #000000; }
+
+#paging input[type="radio"] { display: none; }
+#paging > li { display: inline-block; }
+#paging > li + li { margin-left: 1rem; }
+#paging input:checked ~ label { font-weight: bold; color: #ff0000; }
+
+@-webkit-keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+@-moz-keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+@keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}

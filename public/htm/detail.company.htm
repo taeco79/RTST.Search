@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  <link rel="stylesheet" href="/css/detail.css" type="text/css">
+  <script src="/js/function.js"></script>
+  <script src="/js/detail.js"></script>
+</head>
+
+<body>
+  <h4>기업정보</h4>
+  <table>
+    <caption>개요</caption>
+    <tr>
+      <th>기업명</th>
+      <td colspan="3">
+        <a href="##homepage##" target="_blank">##name##</a>
+        <span is="##isKOSDAQ##">상장</span>
+        <span is="##isINNOBIZ##">이노비즈</span>
+        <span is="##isHidenChampion##">강소기업</span>
+        <span is="##isVenture##">벤처기업</span>
+      </td>
+    </tr>
+    <tr>
+      <th>대표자명</th>
+      <td>##representative##</td>
+      <th>사업자등록번호</th>
+      <td>##registerNumber##</td>
+    </tr>
+    <tr>
+      <th>설립일자</th>
+      <td>##businessRegisted##</td>
+      <th>종업원수</th>
+      <td>##numberOfEmployees## 명<br />(##dateByEmployeeCount## 기준)</td>
+    </tr>
+    <tr>
+      <th>주소</th>
+      <td colspan="3">##address##</td>
+    </tr>
+    <tr>
+      <th>전화번호</th>
+      <td>##tel##</td>
+      <th>팩스번호</th>
+      <td>##fax##</td>
+    </tr>
+    <tr>
+      <th>홈페이지</th>
+      <td><a href="##homepage##" target="_blank">##homepage##</a></td>
+      <th>이메일</th>
+      <td>##email##</td>
+    </tr>
+    <tr>
+      <th>사업부문명</th>
+      <td>##businessTypes##</td>
+    </tr>
+    <tr>
+      <th>제품명</th>
+      <td>##name##</td>
+    </tr>
+    <tr>
+      <th>주요상품내역</th>
+      <td>##businessItems##</td>
+    </tr>
+  </table>
+  <table>
+    <caption>재무(단위: 천원)</caption>
+    <thead>
+      <tr>
+        <th>구분</th>
+        <th>자산총계</th>
+        <th>부채총계</th>
+        <th>매출액</th>
+        <th>영업이익</th>
+        <th>순이익</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>당기</th>
+        <td>##q0Assets##</td>
+        <td>##q0Debt##</td>
+        <td>##q0Sale##</td>
+        <td>##q0Profit##</td>
+        <td>##q0NetProfit##</td>
+      </tr>
+      <tr>
+        <th>전기</th>
+        <td>##q1Assets##</td>
+        <td>##q1Debt##</td>
+        <td>##q1Sale##</td>
+        <td>##q1Profit##</td>
+        <td>##q1NetProfit##</td>
+      </tr>
+      <tr>
+        <th>전전기</th>
+        <td>##q2Assets##</td>
+        <td>##q2Debt##</td>
+        <td>##q2Sale##</td>
+        <td>##q2Profit##</td>
+        <td>##q2NetProfit##</td>
+      </tr>
+    </tbody>
+  </table>
+  <table>
+    <caption>기술 관련</caption>
+    <thead>
+      <tr>
+        <th>수요기술</th>
+        <th>기술도입의향</th>
+        <th>기술이전</th>
+        <th>기술이전전담부서</th>
+        <th>수요기술담당자</th>
+        <th>수요기술담당자연락처</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>##demandingTechnology##</td>
+        <td>##introductoryIntention##</td>
+        <td>##technologyTransfer##</td>
+        <td>##technologyTransferDepartment##</td>
+        <td>##technologyTransferOfficer##</td>
+        <td>##technologyTransferTel##</td>
+      </tr>
+
+    </tbody>
+  </table>
+  <ul id="news"></ul>
+  <ul id="paging"></ul>
+</body>
+
+</html>

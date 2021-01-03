@@ -1,0 +1,18 @@
+li { list-style: none; }
+
+form { width: 50%; float: left; }
+#filter { width: 50%; float: right; }
+#filter > ul { display: inline-block; }
+#filter > ul > li { display: inline-block; }
+#filter > ul > li + li { margin-left: 1rem; }
+#summary { clear: both; }
+#summary > ul:empty::after { content: 'Loading...'; 	-webkit-animation:blink 1.5s ease-in-out infinite alternate;
+    -moz-animation:blink 1.5s ease-in-out infinite alternate;
+    animation:blink 1.5s ease-in-out infinite alternate;
+}
+#result:empty::after { content: 'Loading...'; 	-webkit-animation:blink 1.5s ease-in-out infinite alternate;
+    -moz-animation:blink 1.5s ease-in-out infinite alternate;
+    animation:blink 1.5s ease-in-out infinite alternate;
+}
+
+#result > li { display: inline-block; margin: 0px 1rem 1rem 0px; border: 1px solid #000000; }
