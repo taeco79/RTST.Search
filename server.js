@@ -621,6 +621,35 @@ app.del("/member/:id", (req, res) => {
     });
 });
 
+app.put("/member/:id", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      var query = '';
+      var param = [];
+      query = 'UPDATE `TB-Member`';
+      query += ' SET `name` = ?'; param.push(req.body.name);
+      if (req.body.password.replace(/\s/gim, '') !== '') {
+        query += ', `password` = SHA2(?, 256)'; param.push(req.body.password);
+      }
+      query += ' WHERE `isDeleted` = 0';
+      query += ' AND `key` = ?'; param.push(req.params.id);
+      db_conn.query(query, param, (err, RESULT) => {
+        if (err) {
+          console.log(err);
+          res.json({ error: 9, message: err.message });
+        } else {
+          console.log(RESULT);
+          res.json({ error: 0, message: 'Sucess', data: RESULT, info: { key: req.params.id, name: req.body.name } });
+        }
+      });
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
 app.get("/css/*", (req, res) => {
   fs.readFile('./public' + req.path, 'utf8', function (err, data) {
     if (err !== null) {

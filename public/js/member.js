@@ -232,34 +232,33 @@ function saveMember(obj) {
       if (obj.parentElement.parentElement.querySelector('input[name="' + name + '"]:valid') === null)
         throw name;
     });
-    /*
-        fetch('/member/'+, {
-          method: 'PUT'
-          , headers: {
-            'Content-Type': 'application/json'
+    fetch('/member/' + obj.parentElement.parentElement.querySelector('input[type="checkbox"]').value, {
+      method: 'PUT'
+      , headers: {
+        'Content-Type': 'application/json'
+      }
+      , body: JSON.stringify({
+        password: obj.parentElement.parentElement.querySelector('input[name="password"]').value
+        , name: obj.parentElement.parentElement.querySelector('input[name="name"]').value
+      })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (json) {
+        if (checkError(json)) {
+          if (document.querySelectorAll('input[type="checkbox"][value="' + json.info.key + '"]').length) {
+            document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement.parentElement.querySelectorAll('td')[2].innerText = '';
+            document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement.parentElement.querySelectorAll('td')[3].setAttribute('data-original', json.info.name);
+            document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement.parentElement.querySelectorAll('td')[3].innerText = json.info.name;
+
+            cancelMember(document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement);
           }
-          , body: JSON.stringify({
-            id: document.querySelector('input[name="id"]:valid').value
-            , password: document.querySelector('input[name="password"]:valid').value
-            , name: document.querySelector('input[name="name"]:valid').value
-          })
-        })
-          .then(function (res) { return res.json(); })
-          .then(function (json) {
-            if (checkError(json)) {
-              document.querySelector('input[name="id"]:valid').value = '';
-              document.querySelector('input[name="password"]:valid').value = '';
-              document.querySelector('input[name="name"]:valid').value = '';
-    
-              loadMembers(1);
-            } else {
-              alert(json.message);
-            }
-          })
-          .catch(err => {
-            console.log('Member :: New', 'catch', err);
-          });
-    */
+        } else {
+          alert(json.message);
+        }
+      })
+      .catch(err => {
+        console.log('Member :: New', 'catch', err);
+      });
   } catch (err) {
     if (document.querySelector('input[name="password"]') !== null) {
       switch (err) {
