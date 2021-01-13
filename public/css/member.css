@@ -1,0 +1,14 @@
+tbody > tr > td:not(.none)[colspan]:empty::after {
+  content: 'Loading...';
+  display: block;
+  text-align: center;
+  -webkit-animation:blink 1.5s ease-in-out infinite alternate;
+  -moz-animation:blink 1.5s ease-in-out infinite alternate;
+  animation:blink 1.5s ease-in-out infinite alternate;
+}
+tbody > tr > td.none[colspan]:empty::after {
+  content: '데이터가 존재하지 않습니다.';
+  display: block;
+  text-align: center;
+}
+tfoot > tr > td { text-align: right; }

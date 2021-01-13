@@ -8,21 +8,35 @@ function showMenu() {
     if (getCookie('name') === null)
       throw '로그인 전입니다.';
 
+    if (document.querySelectorAll('#menu').length)
+      throw '메뉴가 이미 활성화 상태입니다.';
+
     document.querySelector('body').append(document.createElement('ul'));
     document.querySelector('body > ul:last-child').setAttribute('id', 'menu')
     document.querySelector('body > ul#menu').append(document.createElement('li'));
     document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
     document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode(decodeURI(getCookie('name'))));
-    document.querySelector('body > ul#menu').append(document.createElement('li'));
-    document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
-    document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
-    document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/management/members');
-    document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Members'));
-    document.querySelector('body > ul#menu').append(document.createElement('li'));
-    document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
-    document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
-    document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/management/companys');
-    document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Companys'));
+    if (!location.pathname.match(/^\/(|search)$/)) {
+      document.querySelector('body > ul#menu').append(document.createElement('li'));
+      document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
+      document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
+      document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/');
+      document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Home'));
+    }
+    if (!location.pathname.match(/^\/management\/members/)) {
+      document.querySelector('body > ul#menu').append(document.createElement('li'));
+      document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
+      document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
+      document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/management/members');
+      document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Members'));
+    }
+    if (!location.pathname.match(/^\/management\/companys/)) {
+      document.querySelector('body > ul#menu').append(document.createElement('li'));
+      document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
+      document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
+      document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/management/companys');
+      document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Companys'));
+    }
     document.querySelector('body > ul#menu').append(document.createElement('li'));
     document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
     document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
@@ -48,7 +62,7 @@ function optionalMessage(idx) {
 function showPaging(total, page) {
   console.log(total, page);
   while (document.querySelectorAll('#paging > *').length)
-    document.querySelectorAll('#paging > *')[0].remove();
+    document.querySelector('#paging > *').remove();
 
   var pages = parseInt(total / 10) + (total % 10 === 0 ? 0 : 1);
   var start = (parseInt(page / 10) * 10) + 1

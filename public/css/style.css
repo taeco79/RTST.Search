@@ -6,6 +6,8 @@ html { font-size: 16px; }
 body { padding-top: 2.0625rem; }
 ul { padding-left: 1rem; margin: 0px; }
 
+.hide { display: none; }
+
 #menu {
   width: 7rem;
   position: fixed;

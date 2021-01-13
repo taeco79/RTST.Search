@@ -9,6 +9,7 @@ const fs = require('fs');
 const fn = require('./functions');
 const fetch = require('node-fetch');
 const urlencode = require("urlencode");
+const { exit } = require("process");
 
 const app = express();
 
@@ -95,7 +96,7 @@ app.get("/search", (req, res) => {
   console.log(req.params.page);
   fn.logined(db_conn, req)
     .then((data) => {
-      fetch('http://rtst.taeco.info:50000/?input_str=' + req.query.q)
+      fetch(process.env.API.toString() + '?input_str=' + req.query.q)
         .then(data => { return data.json(); })
         .then(RESULT => {
           fs.readFile('./public/htm/search.htm', 'utf8', function (err, HTML) {
@@ -237,16 +238,9 @@ app.post("/summarys/:type", (req, res) => {
           query += ', `TB-Patent`.`gradeUse`';
           query += ' FROM `TB-Patent`';
           query += ' WHERE `TB-Patent`.`registerNumber` IN (?)'; param.push(req.body.values);
-          // req.body.filter.forEach(filter => {
-          //   if (filter === 'demandingTechnology') query += ' AND TRIM(IFNULL(`TB-CompanyDemand`.`demandingTechnology`, \'\')) <> \'\'';
-          //   if (filter === 'technologyTransferDepartment') query += ' AND TRIM(IFNULL(`TB-CompanyDemand`.`technologyTransferDepartment`, \'N\')) = \'Y\'';
-          //   if (filter === 'technologyTransfer') query += ' AND TRIM(IFNULL(`TB-CompanyDemand`.`technologyTransfer`, \'N\')) = \'Y\'';
-          //   if (filter === 'isKOSDAQ') query += ' AND TRIM(IFNULL(`TB-Company`.`isKOSDAQ`, \'N\')) = \'Y\'';
-          //   if (filter === 'isINNOBIZ') query += ' AND TRIM(IFNULL(`TB-Company`.`isINNOBIZ`, \'N\')) = \'Y\'';
-          //   if (filter === 'isHidenChampion') query += ' AND TRIM(IFNULL(`TB-Company`.`isHidenChampion`, \'N\')) = \'Y\'';
-          //   if (filter === 'isVenture') query += ' AND TRIM(IFNULL(`TB-Company`.`isVenture`, \'N\')) = \'Y\'';
-
-          // });
+          if (req.body.filter.length) {
+            query += ' AND LEFT(TRIM(IFNULL(`TB-Patent`.`registerNumber`, \'\')), 1) IN (?)'; param.push(req.body.filter);
+          }
           query += ' ORDER BY CASE `registerNumber`';
           var idx = 0;
           req.body.values.forEach(item => {
@@ -363,6 +357,7 @@ app.get("/detail/:class/:id", (req, res) => {
             console.log(req.params.class);
             console.log('#########################');
         }
+        console.log(query, param);
         db_conn.query(query, param, (err, RESULT) => {
           if (err) {
             console.log(err);
@@ -373,7 +368,7 @@ app.get("/detail/:class/:id", (req, res) => {
             let tempKeys = [];
             let tempVals = [];
             for (const [field, value] of Object.entries(RESULT[0]))
-              if (['1applicantCompany', '1currentCompany'].includes(field)) continue;
+              if (['applicantCompany', 'currentCompany'].includes(field)) continue;
               else {
                 console.log(field, value);
                 tmpVAL = value
@@ -386,7 +381,7 @@ app.get("/detail/:class/:id", (req, res) => {
                   tmpVAL = '<ul>';
                   for (var i = 0; i < tempKeys.length; i++) {
                     tmpVAL += '<li>';
-                    if (tempVals[i] !== '-') {
+                    if (!['', '-'].includes(tempVals[i])) {
                       tmpVAL += '<a href="/detail/company/' + tempVals[i] + '">';
                       tmpVAL += tempKeys[i];
                       tmpVAL += '</a>';
@@ -404,7 +399,7 @@ app.get("/detail/:class/:id", (req, res) => {
                   tmpVAL = '<ul>';
                   for (var i = 0; i < tempKeys.length; i++) {
                     tmpVAL += '<li>';
-                    if (tempVals[i] !== '-') {
+                    if (!['', '-'].includes(tempVals[i])) {
                       tmpVAL += '<a href="/detail/company/' + tempVals[i] + '">';
                       tmpVAL += tempKeys[i];
                       tmpVAL += '</a>';
@@ -471,6 +466,161 @@ app.get("/news/:keyword/:limit/:page", (req, res) => {
     });
 });
 
+app.get("/management/:class", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      fs.readFile('./public/htm/management.' + req.params.class + '.htm', 'utf8', function (err, HTML) {
+        res.writeHead(200, {});
+        res.end(HTML);
+      });
+    })
+    .catch((err) => {
+      res.redirect('/');
+    });
+});
+
+app.post("/member", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      var query = ''
+      var param = [];
+
+      query = 'INSERT INTO `TB-Member`(`entry`, `key`, `ref`, `id`, `password`, `name`)';
+      query += ' SELECT NOW() AS`entry`';
+      query += ', UUID() AS`key`';
+      query += ', `TB-Member`.`member` AS`ref`';
+      query += ', ? AS`id`'; param.push(req.body.id);
+      query += ', SHA2(?, 256) AS`password`'; param.push(req.body.password);
+      query += ', ? AS`name`'; param.push(req.body.name);
+      query += 'FROM`TB-Member`';
+      query += 'INNER JOIN`TB-Session` ON`TB-Member`.`member` = `TB-Session`.`Member`';
+      query += 'WHERE`TB-Member`.`id` = ?'; param.push(req.signedCookies.id);
+      query += 'AND`TB-Session`.`Key` = ?'; param.push(req.signedCookies.key);
+      query += 'LIMIT 1;';
+      db_conn.query(query, param, (err, RESULT) => {
+        if (err) {
+          if (/^ER_DUP_ENTRY:/i.test(err.message))
+            res.json({ error: 9, message: '사용중인 아이디입니다.' });
+          else
+            res.json({ error: 9, message: err.message });
+        } else {
+          res.json({ error: 0, message: 'Sucess', data: RESULT });
+        }
+      });
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
+app.get("/members/:page", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      var query = '';
+      var param = [];
+      query = 'SELECT COUNT(*) AS `Count`';
+      query += ' FROM`TB-Member`';
+      query += ' WHERE `TB-Member`.`member` <> 1';
+      query += ' AND `TB-Member`.`isDeleted` = 0';
+      db_conn.query(query, param, (err, COUNT) => {
+        if (err) {
+          res.json({ error: 9, message: err.message });
+        } else {
+          var query = '';
+          var param = [];
+          query = 'SELECT `TB-Member`.`key`';
+          query += ', `TB-Member`.`id`';
+          query += ', `TB-Member`.`name`';
+          query += ', DATE_FORMAT(`TB-Member`.`entry`, \'%Y-%m-%d %H:%i:%s\') AS `entry`';
+          query += ', DATE_FORMAT(`TB-Member`.`update`, \'%Y-%m-%d %H:%i:%s\') AS `update`';
+          query += ', DATE_FORMAT(MAX(`TB-Session`.`Logined`), \'%Y-%m-%d %H:%i:%s\') AS`logined`';
+          query += ' FROM`TB-Member`';
+          query += ' LEFT OUTER JOIN`TB-Session` ON`TB-Member`.`member` = `TB-Session`.`member`';
+          query += ' WHERE `TB-Member`.`member` <> 1';
+          query += ' AND `TB-Member`.`isDeleted` = 0';
+          query += ' GROUP BY `TB-Member`.`key`';
+          query += ', `TB-Member`.`id`';
+          query += ', `TB-Member`.`name`';
+          query += ', `TB-Member`.`entry`';
+          query += ', `TB-Member`.`update`';
+          query += ' LIMIT ?, 10;'; param.push((parseInt(req.params.page) - 1) * 10);
+          db_conn.query(query, param, (err, RESULT) => {
+            if (err) {
+              res.json({ error: 9, message: err.message });
+            } else {
+              console.log(RESULT);
+              res.json({ error: 0, message: 'Sucess', total: COUNT[0].Count, page: parseInt(req.params.page), data: RESULT });
+            }
+          });
+        }
+      });
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
+app.del("/members", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      var query = '';
+      var param = [];
+      query = 'UPDATE `TB-Member`';
+      query += ' SET `id` = SHA2(CONCAT(`id`, \'//\', DATE_FORMAT(`entry`, \'%Y%m%d%H%i%s\')), 256)';
+      query += ', `isDeleted` = 1';
+      query += ' WHERE `member` <> 1';
+      query += ' AND `isDeleted` = 0';
+      query += ' AND `id` <> ?'; param.push(req.signedCookies.id);
+      query += ' AND `key` IN (?)'; param.push(req.body.ids);
+      db_conn.query(query, param, (err, RESULT) => {
+        if (err) {
+          console.log(err);
+          res.json({ error: 9, message: err.message });
+        } else {
+          console.log(RESULT);
+          res.json({ error: 0, message: 'Sucess', data: RESULT });
+        }
+      });
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
+app.del("/member/:id", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      var query = '';
+      var param = [];
+      query = 'UPDATE `TB-Member`';
+      query += ' SET `id` = SHA2(CONCAT(`id`, \'//\', DATE_FORMAT(`entry`, \'%Y%m%d%H%i%s\')), 256)';
+      query += ', `isDeleted` = 1';
+      query += ' WHERE `member` <> 1';
+      query += ' AND `isDeleted` = 0';
+      query += ' AND `id` <> ?'; param.push(req.signedCookies.id);
+      query += ' AND `key` = ?'; param.push(req.params.id);
+      db_conn.query(query, param, (err, RESULT) => {
+        if (err) {
+          res.json({ error: 9, message: err.message });
+        } else {
+          console.log(RESULT);
+          res.json({ error: 0, message: 'Sucess', data: RESULT });
+        }
+      });
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
 app.get("/css/*", (req, res) => {
   fs.readFile('./public' + req.path, 'utf8', function (err, data) {
     if (err !== null) {
@@ -515,8 +665,24 @@ app.get("*", (req, res) => {
     });
 });
 
-// set port, listen for requests
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
-});
+if (typeof (process.env.API) !== 'undefined') {
+  console.log('API Address >> ', process.env.API);
+  // set port, listen for requests
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}.`);
+  });
+} else {
+  console.log("");
+  console.log("");
+  console.log("");
+  console.log("");
+  console.log("");
+  console.log('Does not have an API address.');
+  console.log("");
+  console.log("");
+  console.log("");
+  console.log("");
+  console.log("");
+  process.exit();
+}

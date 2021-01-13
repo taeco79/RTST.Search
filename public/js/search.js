@@ -58,6 +58,8 @@ var arrFilterCompany = [
 window.onload = function () {
   console.log('Search Loaded.');
 
+  showMenu();
+
   try {
     if (SEARCH.output.status !== 'Found')
       throw '검색 결과가 없습니다.';
@@ -143,6 +145,9 @@ function showSummary(type, value) {
 }
 
 function showSummarys(type, value, p) {
+  while (document.querySelectorAll('#result > li').length)
+    document.querySelector('#result > li').remove();
+
   var filters = [];
   document.querySelectorAll('#filter input:checked').forEach(el => {
     filters.push(el.value);

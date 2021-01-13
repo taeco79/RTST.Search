@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  <link rel="stylesheet" href="/css/member.css" type="text/css">
+  <script src="/js/function.js"></script>
+  <script src="/js/member.js"></script>
+</head>
+
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>선택</th>
+        <th>이메일(아이디)</th>
+        <th>비밀번호</th>
+        <th>이름</th>
+        <th>등록일시</th>
+        <th>수정일시</th>
+        <th>접속일시</th>
+        <th>기능</th>
+      </tr>
+      <tr>
+        <td>-</td>
+        <td><input type="email" name="id" placeholder="이메일 형식으로 입력하세요." value="taeco79@devops-lab.com" required></td>
+        <td><input type="password" name="password" placeholder="영문 대소문자, 숫자 특수문자를 포함한 8~20자 입력하세요."
+            pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,20}$" value="Xorhkd77^^" required></td>
+        <td><input type="text" name="name" pattern="^(?=.*[^\s]).{2,}$" placeholder="공백을 제외한 최소 2자이상 입력하세요."
+            value="Shine.Won" required></td>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
+        <td><button id="btnNew">신규</button></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="8"></td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="8"><button id="btnDel">삭제</button></td>
+      </tr>
+    </tfoot>
+  </table>
+  <ul id="paging"></ul>
+</body>
+
+</html>
