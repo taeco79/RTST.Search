@@ -1,7 +1,7 @@
 var timeoutHideMessage = null;
 
 var arrString = {
-  Patent: ['특허등록번호']
+  Patent: ['특허등록번호', '특허출원번호']
   , Company: ['사업자등록번호', '기업코드']
 };
 

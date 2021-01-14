@@ -96,9 +96,11 @@ app.get("/search", (req, res) => {
   console.log(req.params.page);
   fn.logined(db_conn, req)
     .then((data) => {
-      fetch(process.env.API.toString() + '?input_str=' + req.query.q)
+      console.log(process.env.API.toString() + '?input_str=' + req.query.q);
+      fetch(process.env.API.toString() + '?input_str=' + urlencode(req.query.q))
         .then(data => { return data.json(); })
         .then(RESULT => {
+          console.log(RESULT);
           fs.readFile('./public/htm/search.htm', 'utf8', function (err, HTML) {
             // res.writeHead(200, { 'Content-Type': 'application/json' });
             // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT }));
@@ -131,9 +133,18 @@ app.get("/summary/:type/:value", (req, res) => {
           query = 'SELECT * FROM `TB-Patent` WHERE `registerNumber` = ?';
           param = [req.params.value];
           break;
+        case '특허출원번호':
+          query = 'SELECT * FROM `TB-Patent` WHERE `applicationNumber` = ?';
+          param = [req.params.value];
+          break;
         case '사업자등록번호':
           query = 'SELECT * FROM `TB-Company` WHERE `registerNumber` = ?';
           param = [req.params.value];
+          break;
+        case '기업코드':
+          query = 'SELECT * FROM `TB-Company` WHERE `key` = ?';
+          param = [req.params.value];
+          break;
         default:
       }
       db_conn.query(query, param, (err, RESULT) => {
@@ -469,7 +480,7 @@ app.get("/news/:keyword/:limit/:page", (req, res) => {
 app.get("/management/:class", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
-      fs.readFile('./public/htm/management.' + req.params.class + '.htm', 'utf8', function (err, HTML) {
+      fs.readFile('./public/htm/' + req.params.class + '.htm', 'utf8', function (err, HTML) {
         res.writeHead(200, {});
         res.end(HTML);
       });
