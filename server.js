@@ -203,8 +203,8 @@ app.post("/summarys/:type", (req, res) => {
           // query += ', `TB-CompanyDemand`.`technologyTransferOfficer`';
           // query += ', `TB-CompanyDemand`.`technologyTransferTel`';
           query += ' FROM `TB-Company`';
-          query += ' INNER JOIN `TB-CompanyDemand` ON `TB-Company`.`key` = `TB-CompanyDemand`.`keyCompany`';
-          query += ' WHERE `TB-Company`.`key` IN (?)'; param.push(req.body.values);
+          query += ' INNER JOIN `TB-CompanyDemand` ON `TB-Company`.`company` = `TB-CompanyDemand`.`company`';
+          query += ' WHERE `TB-Company`.`keyCompany` IN (?)'; param.push(req.body.values);
           req.body.filter.forEach(filter => {
             if (filter === 'demandingTechnology') query += ' AND TRIM(IFNULL(`TB-CompanyDemand`.`demandingTechnology`, \'\')) <> \'\'';
             if (filter === 'technologyTransferDepartment') query += ' AND TRIM(IFNULL(`TB-CompanyDemand`.`technologyTransferDepartment`, \'N\')) = \'Y\'';
