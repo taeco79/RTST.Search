@@ -16,24 +16,53 @@
     <thead>
       <tr>
         <th>선택</th>
-        <th>이메일(아이디)</th>
-        <th>비밀번호</th>
-        <th>이름</th>
-        <th>등록일시</th>
-        <th>수정일시</th>
-        <th>접속일시</th>
-        <th>기능</th>
+        <th>기업코드</th>
+        <th>사업자등록번호</th>
+        <th>기업명</th>
+        <th>대표자명</th>
+        <!--
+        <th>설립일자</th>
+        <th>종업원수</th>
+        <th>종업원수기준일자</th>
+        <th>주소</th>
+        <th>전화번호</th>
+        <th>팩스번호</th>
+        <th>홈페이지URL</th>
+        <th>이메일</th>
+        <th>사업부문명</th>
+        <th>주요상품내역</th>
+        <th>상장</th>
+        <th>이노비즈인증</th>
+        <th>강소기업인증</th>
+        <th>벤처기업인증</th>
+        <th>NICE업체코드</th>
+        <th>KED업체코드</th>
+        -->
       </tr>
       <tr>
         <td>-</td>
-        <td><input type="email" name="id" placeholder="이메일 형식으로 입력하세요." required></td>
-        <td><input type="password" name="password" placeholder="영문 대소문자, 숫자 특수문자를 포함한 8~20자 입력하세요."
-            pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,20}$" required></td>
-        <td><input type="text" name="name" pattern="^(?=.*[^\s]).{2,}$" placeholder="공백을 제외한 최소 2자이상 입력하세요." required>
-        </td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
+        <td><input type="text" name="key" placeholder="기업코드" required></td>
+        <td><input type="text" name="registerNumber" placeholder="사업자등록번호" pattern="\d{3}-?\d{2}-?\d{5}" required></td>
+        <td><input type="text" name="name" placeholder="기업명" required></td>
+        <td><input type="text" name="representative" placeholder="대표자명" required></td>
+        <!--
+        <td><input type="date" name="businessRegisted" placeholder="설립일자"></td>
+        <td><input type="text" name="numberOfEmployees" placeholder="종업원수"></td>
+        <td><input type="date" name="dateByEmployeeCount" placeholder="종업원수기준일자"></td>
+        <td><input type="text" name="address" placeholder="주소"></td>
+        <td><input type="text" name="tel" placeholder="전화번호"></td>
+        <td><input type="text" name="fax" placeholder="팩스번호"></td>
+        <td><input type="text" name="homepage" placeholder="홈페이지URL"></td>
+        <td><input type="email" name="email" placeholder="이메일"></td>
+        <td><input type="text" name="businessTypes" placeholder="사업부문명"></td>
+        <td><input type="text" name="businessItems" placeholder="주요상품내역"></td>
+        <td><input type="text" name="isKOSDAQ" placeholder="상장"></td>
+        <td><input type="text" name="isINNOBIZ" placeholder="이노비즈인증"></td>
+        <td><input type="text" name="isHidenChampion" placeholder="강소기업인증"></td>
+        <td><input type="text" name="isVenture" placeholder="벤처기업인증"></td>
+        <td><input type="text" name="nice" placeholder="NICE업체코드"></td>
+        <td><input type="text" name="ked" placeholder="KED업체코드"></td> 
+        -->
         <td><button id="btnNew">신규</button></td>
       </tr>
     </thead>
@@ -42,13 +71,17 @@
         <td colspan="8"></td>
       </tr>
     </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="8"><button id="btnDel">삭제</button></td>
-      </tr>
-    </tfoot>
   </table>
   <ul id="paging"></ul>
+  <hr>
+  <div class="detail">
+    <div class="tabs">
+      <input type="radio" name="tab" value="info" id="companyInfo" checked><label for="companyInfo">기본정보</label>
+      <input type="radio" name="tab" value="demand" id="companyDemand"><label for="companyDemand">수요정보</label>
+      <input type="radio" name="tab" value="finance" id="companyFinance"><label for="companyFinance">회계정보</label>
+    </div>
+    <div class="content"></div>
+  </div>
 </body>
 
 </html>

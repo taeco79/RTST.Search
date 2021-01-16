@@ -1,0 +1,33 @@
+tbody > tr > td:not(.none)[colspan]:empty::after {
+  content: 'Loading...';
+  display: block;
+  text-align: center;
+  -webkit-animation:blink 1.5s ease-in-out infinite alternate;
+  -moz-animation:blink 1.5s ease-in-out infinite alternate;
+  animation:blink 1.5s ease-in-out infinite alternate;
+}
+
+tbody > tr > td.none[colspan]:empty::after {
+  content: '데이터가 존재하지 않습니다.';
+  display: block;
+  text-align: center;
+}
+tfoot > tr > td { text-align: right; }
+
+.detail { padding: 1rem 0.5rem 0px 0.5rem; }
+.detail > .tabs { padding-left: 1rem; }
+.detail > .tabs > input { display: none; }
+.detail > .tabs > label { float: left; padding: 0.25rem 0.5rem; border: 1px solid #000000; border-radius: 0.25rem 0.25rem 0px 0px; }
+.detail > .tabs > input:checked + label { background-color: #ffffff; border-bottom-color: #ffffff; }
+.detail > .tabs > label ~ label { border-left: none; }
+.detail > .content { width: 100%; min-height: 18.75rem; border: 1px solid #000000; margin-top: 2.0625rem; background-color: #ffffff; }
+.detail > .content:empty::after { content: '기업을 선택하세요.'; display: block; text-align: center; line-height: 18.75rem;}
+
+.detail > .content > ul:empty::after {
+  content: 'Loading...';
+  display: block;
+  text-align: center;
+  -webkit-animation:blink 1.5s ease-in-out infinite alternate;
+  -moz-animation:blink 1.5s ease-in-out infinite alternate;
+  animation:blink 1.5s ease-in-out infinite alternate;
+}
