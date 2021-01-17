@@ -11,14 +11,14 @@
 
 <body>
   <form action="/search" method="get">
-    <fieldset>
-      <legend>Search</legend>
-      <input type="text" name="q" placeholder="특허등록번호, 기업코드 또는 사업자등록번호를 입력해 주세요." value="101989390">
-      <input type="submit" value="Search">
-      <span id="message"></span>
-    </fieldset>
+    <div class="search">
+      <h1>검색 내용을 입력하세요.</h1>
+      <div>
+        <input type="text" name="q" placeholder="특허출원번호, 특허등록번호, 기업명, 사업자등록번호" value="101989390">
+        <button type="submit"><span>검색하기</span></button>
+      </div>
+    </div>
   </form>
-  <div id="summary"></div>
 </body>
 
 </html>
