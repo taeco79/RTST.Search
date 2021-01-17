@@ -5,19 +5,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  <link rel="stylesheet" href="/css/login.css" type="text/css">
   <script src="/js/function.js"></script>
   <script src="/js/login.js"></script>
 </head>
 
 <body>
   <form action="/login" method="post">
-    <fieldset>
-      <legend>Login</legend>
-      <input type="email" name="id" value="taeco79@gmail.com">
-      <input type="password" name="password" value="xorhkd77">
-      <input type="submit" value="Login">
-      <span id="message"></span>
-    </fieldset>
+    <div class="login">
+      <div class="tooltip">
+        <div id="message">Message</div>
+      </div>
+      <input type="email" name="id" placeholder="이메일" value="taeco79@gmail.com" required>
+      <input type="password" name="password" placeholder="비밀번호" value="xorhkd77" required>
+      <button type="submit">로그인</button>
+    </div>
   </form>
 </body>
 

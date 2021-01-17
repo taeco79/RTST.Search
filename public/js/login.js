@@ -21,6 +21,7 @@ window.onload = function () {
         console.log('then', json);
         if (json.error === 0) location.href = '/';
         else {
+          document.querySelector('.tooltip').style.opacity = 1;
           document.querySelector('#message').innerText = json.message + optionalMessage(json.error);
 
           //   if (timeoutHideMessage !== null)

@@ -830,41 +830,10 @@ app.get("/finance/:id", (req, res) => {
     });
 });
 
-app.get("/htm/*", (req, res) => {
-  fs.readFile('./public' + req.path, 'utf8', function (err, data) {
-    if (err !== null) {
-      res.writeHead(404, {});
-      res.end(null);
-    } else {
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(data);
-    }
-  });
-});
-
-app.get("/css/*", (req, res) => {
-  fs.readFile('./public' + req.path, 'utf8', function (err, data) {
-    if (err !== null) {
-      res.writeHead(404, {});
-      res.end(null);
-    } else {
-      res.writeHead(200, { 'Content-Type': 'text/css' });
-      res.end(data);
-    }
-  });
-});
-
-app.get("/js/*", (req, res) => {
-  fs.readFile('./public' + req.path, 'utf8', function (err, data) {
-    if (err !== null) {
-      res.writeHead(404, {});
-      res.end(null);
-    } else {
-      res.writeHead(200, { 'Content-Type': 'text/javascript' });
-      res.end(data);
-    }
-  });
-});
+app.get("/htm/*", (req, res) => fn.loadFile(req, res));
+app.get("/img/*", (req, res) => fn.loadFile(req, res));
+app.get("/css/*", (req, res) => fn.loadFile(req, res));
+app.get("/js/*", (req, res) => fn.loadFile(req, res));
 
 // simple route
 app.get("*", (req, res) => {
