@@ -1,3 +1,4 @@
+var LIMIT = 10;
 window.onload = function () {
   console.log('Function loaded.');
   showMenu();
@@ -11,37 +12,33 @@ function showMenu() {
     if (document.querySelectorAll('#menu').length)
       throw '메뉴가 이미 활성화 상태입니다.';
 
-    document.querySelector('body').append(document.createElement('ul'));
-    document.querySelector('body > ul:last-child').setAttribute('id', 'menu')
-    document.querySelector('body > ul#menu').append(document.createElement('li'));
-    document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
-    document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode(decodeURI(getCookie('name'))));
+    document.querySelector('.searchMini').append(document.createElement('div'));
+    document.querySelector('.searchMini > div:last-child').setAttribute('id', 'menu')
+    document.querySelector('.searchMini> div#menu').append(document.createElement('a'));
+    document.querySelector('.searchMini> div#menu > a').append(document.createTextNode(decodeURI(getCookie('name'))));
+    document.querySelector('.searchMini> div#menu').append(document.createElement('ul'));
     if (!location.pathname.match(/^\/(|search)$/)) {
-      document.querySelector('body > ul#menu').append(document.createElement('li'));
-      document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
-      document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
-      document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/');
-      document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Home'));
+      document.querySelector('.searchMini> div#menu > ul').append(document.createElement('li'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child').append(document.createElement('a'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/');
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').append(document.createTextNode('Home'));
     }
     if (!location.pathname.match(/^\/management\/members/)) {
-      document.querySelector('body > ul#menu').append(document.createElement('li'));
-      document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
-      document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
-      document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/management/members');
-      document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Members'));
+      document.querySelector('.searchMini> div#menu > ul').append(document.createElement('li'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child').append(document.createElement('a'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/management/members');
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').append(document.createTextNode('Members'));
     }
     if (!location.pathname.match(/^\/management\/companys/)) {
-      document.querySelector('body > ul#menu').append(document.createElement('li'));
-      document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
-      document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
-      document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/management/companys');
-      document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Companys'));
+      document.querySelector('.searchMini> div#menu > ul').append(document.createElement('li'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child').append(document.createElement('a'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/management/companys');
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').append(document.createTextNode('Companys'));
     }
-    document.querySelector('body > ul#menu').append(document.createElement('li'));
-    document.querySelector('body > ul#menu > li:last-child').setAttribute('class', 'hide');
-    document.querySelector('body > ul#menu > li:last-child').append(document.createElement('a'));
-    document.querySelector('body > ul#menu > li:last-child > a').setAttribute('href', '/logout');
-    document.querySelector('body > ul#menu > li:last-child > a').append(document.createTextNode('Logout'));
+    document.querySelector('.searchMini> div#menu > ul').append(document.createElement('li'));
+    document.querySelector('.searchMini> div#menu > ul > li:last-child').append(document.createElement('a'));
+    document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/logout');
+    document.querySelector('.searchMini> div#menu > ul > li:last-child > a').append(document.createTextNode('Logout'));
   } catch (err) {
     console.log(err.message);
   }
@@ -59,14 +56,22 @@ function optionalMessage(idx) {
   }
 }
 
-function showPaging(total, page) {
-  console.log(total, page);
+
+function showPaging(total, page, limit = null) {
+  if (limit !== null)
+    LIMIT = limit;
   while (document.querySelectorAll('#paging > *').length)
     document.querySelector('#paging > *').remove();
 
-  var pages = parseInt(total / 10) + (total % 10 === 0 ? 0 : 1);
+  var pages = parseInt(total / LIMIT) + (total % LIMIT === 0 ? 0 : 1);
   var start = (parseInt(page / 10) * 10) + 1
   var end = start + 9 > pages ? pages : start + 9;
+  console.log(total, page, pages, LIMIT);
+
+  if (document.querySelectorAll('#paging').length === 0) {
+    document.querySelector('#frame').append(document.createElement('ul'));
+    document.querySelector('#frame > ul:last-child').setAttribute('id', 'paging');
+  }
 
   document.querySelector('#paging').append(document.createElement('li'));
   document.querySelector('#paging > li:last-child').append(document.createElement('input'));
@@ -75,8 +80,8 @@ function showPaging(total, page) {
   document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
   document.querySelector('#paging > li:last-child > input').setAttribute('value', 1);
   document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+  document.querySelector('#paging > li:last-child > label:last-child').classList.add('first');
   document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'pFirst');
-  document.querySelector('#paging > li:last-child > label:last-child').append(document.createTextNode('<<'));
 
   document.querySelector('#paging').append(document.createElement('li'));
   document.querySelector('#paging > li:last-child').append(document.createElement('input'));
@@ -85,8 +90,8 @@ function showPaging(total, page) {
   document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
   document.querySelector('#paging > li:last-child > input').setAttribute('value', start > 20 ? start - 10 : 1);
   document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+  document.querySelector('#paging > li:last-child > label:last-child').classList.add('prev');
   document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'pPrev');
-  document.querySelector('#paging > li:last-child > label:last-child').append(document.createTextNode('<'));
 
   for (var p = start; p <= end; p++) {
     document.querySelector('#paging').append(document.createElement('li'));
@@ -109,18 +114,18 @@ function showPaging(total, page) {
   document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
   document.querySelector('#paging > li:last-child > input').setAttribute('value', pages > end + 1 ? start + 10 : pages);
   document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+  document.querySelector('#paging > li:last-child > label:last-child').classList.add('next');
   document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'pNext');
-  document.querySelector('#paging > li:last-child > label:last-child').append(document.createTextNode('>'));
 
   document.querySelector('#paging').append(document.createElement('li'));
   document.querySelector('#paging > li:last-child').append(document.createElement('input'));
   document.querySelector('#paging > li:last-child > input').setAttribute('type', 'radio');
   document.querySelector('#paging > li:last-child > input').setAttribute('id', 'pLast');
   document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
-  document.querySelector('#paging > li:last-child > input').setAttribute('value', end);
+  document.querySelector('#paging > li:last-child > input').setAttribute('value', pages);
   document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+  document.querySelector('#paging > li:last-child > label:last-child').classList.add('last');
   document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'pLast');
-  document.querySelector('#paging > li:last-child > label:last-child').append(document.createTextNode('>>'));
 
   document.querySelectorAll('#paging input').forEach(el => {
     el.addEventListener('change', function (e) {

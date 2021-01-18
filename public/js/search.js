@@ -31,8 +31,7 @@ var arrResultField = {
     , { id: 'astrtCont', title: '요약문' }
   ]
   , Company: [
-    { id: 'key', title: '기업코드' }
-    , { id: 'name', title: '기업명' }
+    { id: 'name', title: '기업명' }
     , { id: 'registerNumber', title: '사업자등록번호' }
     , { id: 'businessTypes', title: '사업부문명' }
     , { id: 'businessItems', title: '제품명' }
@@ -47,7 +46,7 @@ var arrFilterPatent = [
 
 var arrFilterCompany = [
   { id: 'demandingTechnology', title: '수요기술' }
-  , { id: 'technologyTransferDepartment', title: '기술이전전담부서' }
+  , { id: 'technologyTransferDepartment', title: '기술이전 담당부서' }
   , { id: 'technologyTransfer', title: '기술이전' }
   , { id: 'isKOSDAQ', title: '상장' }
   , { id: 'isINNOBIZ', title: '이노비즈 인증' }
@@ -57,6 +56,7 @@ var arrFilterCompany = [
 
 window.onload = function () {
   console.log('Search Loaded.');
+  LIMIT = 9;
 
   showMenu();
 
@@ -64,79 +64,82 @@ window.onload = function () {
     if (SEARCH.output.status !== 'Found')
       throw '검색 결과가 없습니다.';
 
-    document.querySelector('body').append(document.createElement('fieldset'));
-    document.querySelector('body > fieldset:last-child').setAttribute('id', 'filter');
-    document.querySelector('body').append(document.createElement('fieldset'));
-    document.querySelector('body > fieldset:last-child').setAttribute('id', 'summary');
-    document.querySelector('body').append(document.createElement('ul'));
-    document.querySelector('body > ul:last-child').setAttribute('id', 'result');
-    document.querySelector('body').append(document.createElement('ul'));
-    document.querySelector('body > ul:last-child').setAttribute('id', 'paging');
+    // document.querySelector('#frame').append(document.createElement('ul'));
+    // document.querySelector('#frame > ul:last-child').setAttribute('id', 'result');
 
-    showFilter(SEARCH.output.type, SEARCH.input.value);
     showSummary(SEARCH.input.type, SEARCH.input.value);
-    showPaging(SEARCH.output.value.length, 1);
-    showSummarys(SEARCH.output.type, SEARCH.output.value, 1);
+    showFilter(SEARCH.output.type, SEARCH.input.value);
+    // showResult(SEARCH.output.type, SEARCH.output.value, 1);
+    showResult(SEARCH.output.type, SEARCH.output.value, 1);
   } catch (err) {
     console.log('Error >> ', err);
   }
 }
 
 function showFilter(type, value) {
-  while (document.querySelectorAll('#filter > ul > li').length)
-    document.querySelectorAll('#filter > ul > li')[0].remove();
+  document.querySelector('#frame').append(document.createElement('h2'));
+  document.querySelector('#frame > h2:last-child').innerText = '검색 결과';
 
-  document.querySelector('#filter').append(document.createElement('legend'));
-  document.querySelector('#filter > legend').append(document.createTextNode('필터'));
-  document.querySelector('#filter').append(document.createElement('ul'));
+  document.querySelector('#frame').append(document.createElement('ul'));
+  document.querySelector('#frame > ul:last-child').setAttribute('id', 'filter');
+
+  while (document.querySelectorAll('#filter > li').length)
+    document.querySelectorAll('#filter > li')[0].remove();
 
   (arrString.Company.includes(type) ? arrFilterCompany : arrFilterPatent).forEach(item => {
-    document.querySelector('#filter > ul').append(document.createElement('li'));
-    document.querySelector('#filter > ul > li:last-child').append(document.createElement('input'));
-    document.querySelector('#filter > ul > li:last-child > input').setAttribute('type', 'checkbox');
-    document.querySelector('#filter > ul > li:last-child > input').setAttribute('id', 'currentName' + item.id);
-    document.querySelector('#filter > ul > li:last-child > input').setAttribute('name', 'currentName[]');
-    document.querySelector('#filter > ul > li:last-child > input').setAttribute('value', item.id);
-    document.querySelector('#filter > ul > li:last-child').append(document.createElement('label'));
-    document.querySelector('#filter > ul > li:last-child > label').setAttribute('for', 'currentName' + item.id);
-    document.querySelector('#filter > ul > li:last-child > label').append(document.createTextNode(item.title));
+    document.querySelector('#filter').append(document.createElement('li'));
+    document.querySelector('#filter > li:last-child').append(document.createElement('input'));
+    document.querySelector('#filter > li:last-child > input').setAttribute('type', 'checkbox');
+    document.querySelector('#filter > li:last-child > input').setAttribute('id', 'currentName' + item.id);
+    document.querySelector('#filter > li:last-child > input').setAttribute('name', 'currentName[]');
+    document.querySelector('#filter > li:last-child > input').setAttribute('value', item.id);
+    document.querySelector('#filter > li:last-child').append(document.createElement('label'));
+    document.querySelector('#filter > li:last-child > label').setAttribute('for', 'currentName' + item.id);
+    document.querySelector('#filter > li:last-child > label').append(document.createTextNode(item.title));
   });
   document.querySelectorAll('#filter input').forEach(el => {
     el.addEventListener('change', function (e) {
-      showSummarys(SEARCH.output.type, SEARCH.output.value, 1);
+      showResult(SEARCH.output.type, SEARCH.output.value, 1);
     });
   });
 }
 
 function showSummary(type, value) {
-  document.querySelector('#summary').append(document.createElement('legend'));
-  document.querySelector('#summary > legend').append(document.createTextNode(type + '<' + value + '> 요약 정보'));
-  document.querySelector('#summary').append(document.createElement('ul'));
+  document.querySelector('#frame').append(document.createElement('h1'));
+  document.querySelector('#frame > h1').innerText = type;
+  document.querySelector('#frame > h1').appendChild(document.createElement('span'));
+  document.querySelector('#frame > h1 > span').innerText = value;
+
+  document.querySelector('#frame').append(document.createElement('h2'));
+  document.querySelector('#frame > h2').innerText = '요약';
+
+  document.querySelector('#frame').append(document.createElement('ul'));
+  document.querySelector('#frame > ul:last-child').setAttribute('id', 'summary');
   fetch('/summary/' + type + '/' + value)
     .then(function (res) { return res.json(); })
     .then(function (json) {
       if (checkError(json)) {
         console.log('Summary', 'then', json);
+        var arrSummary = null;
         if (arrString.Patent.includes(type))
-          arrSummaryField.Patent.forEach(item => {
-            document.querySelector('#summary > ul').append(document.createElement('li'));
-            document.querySelector('#summary > ul > li:last-child').setAttribute('id', item.id);
-            document.querySelector('#summary > ul > li:last-child').append(document.createTextNode(item.title + ' : '));
-            document.querySelector('#summary > ul > li:last-child').append(document.createElement('span'));
-            document.querySelector('#summary > ul > li:last-child > span').append(document.createTextNode(eval('json.data.' + item.id)));
-          });
+          arrSummary = arrSummaryField.Patent;
         else if (arrString.Company.includes(type))
-          arrSummaryField.Company.forEach(item => {
-            document.querySelector('#summary > ul').append(document.createElement('li'));
-            document.querySelector('#summary > ul > li:last-child').setAttribute('id', item.id);
-            document.querySelector('#summary > ul > li:last-child').append(document.createTextNode(item.title + ' : '));
-            document.querySelector('#summary > ul > li:last-child').append(document.createElement('span'));
-            document.querySelector('#summary > ul > li:last-child > span').append(document.createTextNode(eval('json.data.' + item.id)));
-          });
+          arrSummary = arrSummaryField.Company;
         else
-          console.log(type);
+          throw type;
+
+        arrSummary.forEach(item => {
+          document.querySelector('#summary').append(document.createElement('li'));
+          document.querySelector('#summary > li:last-child').setAttribute('id', item.id);
+          document.querySelector('#summary > li:last-child').append(document.createElement('div'));
+          document.querySelector('#summary > li:last-child > div:last-child').innerText = item.title;
+          document.querySelector('#summary > li:last-child').append(document.createElement('div'));
+          document.querySelector('#summary > li:last-child > div:last-child').append(document.createTextNode(eval('json.data.' + item.id)));
+        });
       } else {
-        console.log('Here');
+        document.querySelector('#summary').append(document.createElement('li'));
+        document.querySelector('#summary > li:last-child').classList.add('error')
+        document.querySelector('#summary > li:last-child').innerText = json.message;
       }
     })
     .catch(err => {
@@ -144,9 +147,13 @@ function showSummary(type, value) {
     });
 }
 
-function showSummarys(type, value, p) {
-  while (document.querySelectorAll('#result > li').length)
-    document.querySelector('#result > li').remove();
+function showResult(type, value, p) {
+  if (document.querySelectorAll('#result').length === 0) {
+    document.querySelector('#frame').append(document.createElement('div'));
+    document.querySelector('#frame > div:last-child').setAttribute('id', 'result');
+  }
+
+  document.querySelector('#result').innerHTML = '';
 
   var filters = [];
   document.querySelectorAll('#filter input:checked').forEach(el => {
@@ -166,57 +173,69 @@ function showSummarys(type, value, p) {
   })
     .then(function (res) { return res.json(); })
     .then(function (json) {
-      while (document.querySelectorAll('#result > *').length)
-        document.querySelectorAll('#result > *')[0].remove();
+      while (document.querySelectorAll('#result > div').length)
+        document.querySelector('#result > div').remove();
+
       if (checkError(json)) {
         console.log('Summarys', 'then', json);
 
         json.data.forEach(record => {
-          document.querySelector('#result').append(document.createElement('li'));
+          document.querySelector('#result').append(document.createElement('a'));
           if (arrString.Company.includes(type)) {
-            document.querySelector('#result > li:last-child').append(document.createElement('ul'));
+            document.querySelector('#result > a:last-child').classList.add('company');
+            document.querySelector('#result > a:last-child').setAttribute('target', '_blank');
+            document.querySelector('#result > a:last-child').setAttribute('href', '/detail/company/' + record.company);
+            document.querySelector('#result > a:last-child').append(document.createElement('ul'));
             arrResultField.Company.forEach(item => {
-              document.querySelector('#result > li:last-child > ul').append(document.createElement('li'));
-              document.querySelector('#result > li:last-child > ul > li:last-child').setAttribute('id', item.id);
-              document.querySelector('#result > li:last-child > ul > li:last-child').append(document.createTextNode(item.title + ' : '));
+              document.querySelector('#result > a:last-child > ul').append(document.createElement('li'));
+              document.querySelector('#result > a:last-child > ul > li:last-child').setAttribute('id', item.id);
+              document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('div'));
+              document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').innerText = item.title;
               switch (item.id) {
-                case 'name':
-                  document.querySelector('#result > li:last-child > ul > li:last-child').append(document.createElement('a'));
-                  document.querySelector('#result > li:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
-                  document.querySelector('#result > li:last-child > ul > li:last-child > a').setAttribute('href', '/detail/company/' + record.key);
-                  document.querySelector('#result > li:last-child > ul > li:last-child > a').append(document.createTextNode(eval('record.' + item.id)));
-                  break;
+                // case 'name':
+                //   document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('a'));
+                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
+                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('href', '/detail/company/' + record.key);
+                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').append(document.createTextNode(eval('record.' + item.id)));
+                //   break;
                 default:
-                  document.querySelector('#result > li:last-child > ul > li:last-child').append(document.createElement('span'));
-                  document.querySelector('#result > li:last-child > ul > li:last-child > span').append(document.createTextNode(eval('record.' + item.id)));
+                  document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('div'));
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['사업부문명', '제품명'].includes(item.title) ? 'ellipsis-2' : 'ellipsis-1')
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').append(document.createTextNode(eval('record.' + item.id)));
               }
             });
 
+            showPaging(SEARCH.output.value.length, json.page, 9);
           } else if (arrString.Patent.includes(type)) {
-            document.querySelector('#result > li:last-child').append(document.createElement('ul'));
+            document.querySelector('#result > a:last-child').classList.add('patent');
+            document.querySelector('#result > a:last-child').setAttribute('target', '_blank');
+            document.querySelector('#result > a:last-child').setAttribute('href', '/detail/patent/' + record.registerNumber);
+            document.querySelector('#result > a:last-child').append(document.createElement('ul'));
             arrResultField.Patent.forEach(item => {
-              document.querySelector('#result > li:last-child > ul').append(document.createElement('li'));
-              document.querySelector('#result > li:last-child > ul > li:last-child').setAttribute('id', item.id);
-              document.querySelector('#result > li:last-child > ul > li:last-child').append(document.createTextNode(item.title + ' : '));
+              document.querySelector('#result > a:last-child > ul').append(document.createElement('li'));
+              document.querySelector('#result > a:last-child > ul > li:last-child').setAttribute('id', item.id);
+              document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('div'));
+              document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').innerText = item.title;
               switch (item.id) {
-                case 'registerNumber':
-                  document.querySelector('#result > li:last-child > ul > li:last-child').append(document.createElement('a'));
-                  document.querySelector('#result > li:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
-                  document.querySelector('#result > li:last-child > ul > li:last-child > a').setAttribute('href', '/detail/patent/' + record.registerNumber);
-                  document.querySelector('#result > li:last-child > ul > li:last-child > a').append(document.createTextNode(eval('record.' + item.id)));
-                  break;
+                // case 'registerNumber':
+                //   document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('a'));
+                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
+                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('href', '/detail/patent/' + record.registerNumber);
+                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').append(document.createTextNode(eval('record.' + item.id)));
+                //   break;
                 default:
-                  document.querySelector('#result > li:last-child > ul > li:last-child').append(document.createElement('span'));
-                  document.querySelector('#result > li:last-child > ul > li:last-child > span').append(document.createTextNode(eval('record.' + item.id)));
+                  document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('div'));
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['요약문'].includes(item.title) ? 'ellipsis-2' : 'ellipsis-1')
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').append(document.createTextNode(eval('record.' + item.id)));
               }
             });
 
+            showPaging(SEARCH.output.value.length, json.page, 8);
           } else {
             console.log('#########################');
             console.log(type);
             console.log('#########################');
           }
-
         });
       } else {
         console.log('Here');
@@ -228,5 +247,5 @@ function showSummarys(type, value, p) {
 }
 
 function changePage(page) {
-  showSummarys(SEARCH.output.type, SEARCH.output.value, page);
+  showResult(SEARCH.output.type, SEARCH.output.value, page);
 }

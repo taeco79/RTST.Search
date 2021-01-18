@@ -54,7 +54,7 @@ input, button {
   background-position: 0.75rem center;
 }
 input { font-size: 0.875rem; color: #333333; border-color: rgba(51, 51, 51, 0.2); padding-left: 3.75rem; }
-button { font-size: 1rem; color: #FFFFFF; border-color: rgba(44, 93, 227, 1); background-color: #2C5DE3; }
+button { font-size: 1rem; color: #FFFFFF; border-color: rgba(44, 93, 227, 1); background-color: #2C5DE3; cursor: pointer; }
 
 input[type="email"] { background-image: url(/img/ico/user.png); }
 input[type="password"] { background-image: url(/img/ico/lock.png); }

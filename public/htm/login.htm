@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 
 <head>
   <meta charset="UTF-8">
@@ -12,16 +12,18 @@
 </head>
 
 <body>
-  <form action="/login" method="post">
-    <div class="login">
-      <div class="tooltip">
-        <div id="message">Message</div>
+  <div id="frame">
+    <form action="/login" method="post">
+      <div class="login">
+        <div class="tooltip">
+          <div id="message">Message</div>
+        </div>
+        <input type="email" name="id" placeholder="이메일" value="taeco79@gmail.com" required>
+        <input type="password" name="password" placeholder="비밀번호" value="xorhkd77" required>
+        <button type="submit">로그인</button>
       </div>
-      <input type="email" name="id" placeholder="이메일" value="taeco79@gmail.com" required>
-      <input type="password" name="password" placeholder="비밀번호" value="xorhkd77" required>
-      <button type="submit">로그인</button>
-    </div>
-  </form>
+    </form>
+  </div>
 </body>
 
 </html>

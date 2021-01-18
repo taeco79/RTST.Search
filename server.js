@@ -10,6 +10,7 @@ const fn = require('./functions');
 const fetch = require('node-fetch');
 const urlencode = require("urlencode");
 const { exit } = require("process");
+const { rejects } = require("assert");
 
 const app = express();
 
@@ -111,7 +112,12 @@ app.get("/search", (req, res) => {
             if (RESULT.output.status !== 'Found')
               HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으나, 결과가 존재하지 않습니다.');
             else
-              HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, ' + RESULT.output.value.length + '개의 ' + RESULT.output.type + '를 찾았습니다.')
+              if (RESULT.output.type === '특허등록번호')
+                HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 특허</b>를 찾았습니다.');
+              else if (RESULT.output.type === '기업코드')
+                HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 기업</b>을 찾았습니다.');
+              else
+                HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 ' + RESULT.output.type + '</b>을 찾았습니다.');
             res.end(HTML);
           });
         })
@@ -127,38 +133,41 @@ app.get("/search", (req, res) => {
 app.get("/summary/:type/:value", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
-      var query, param;
-      switch (req.params.type) {
-        case '특허등록번호':
-          query = 'SELECT * FROM `TB-Patent` WHERE `registerNumber` = ?';
-          param = [req.params.value];
-          break;
-        case '특허출원번호':
-          query = 'SELECT * FROM `TB-Patent` WHERE `applicationNumber` = ?';
-          param = [req.params.value];
-          break;
-        case '사업자등록번호':
-          query = 'SELECT * FROM `TB-Company` WHERE `registerNumber` = ?';
-          param = [req.params.value];
-          break;
-        case '기업코드':
-          query = 'SELECT * FROM `TB-Company` WHERE `key` = ?';
-          param = [req.params.value];
-          break;
-        default:
+      var query = '';
+      var param = [];
+      if (['특허등록번호', '특허출원번호'].includes(req.params.type)) {
+        query = 'SELECT `inventionTitle`';
+        query += ', `registerNumber`';
+        query += ', DATE_FORMAT(`registerDate`, \'%Y-%m-%d\') AS `registerDate`';
+        query += ', `ipcNumber`';
+        query += ', `astrtCont`';
+        query += ' FROM `TB-Patent`';
+        if (req.params.type === '특허등록번호') query += ' WHERE `registerNumber` = ?';
+        else query += ' WHERE `applicationNumber` = ?';
+        param = [req.params.value];
+
+      } else if (['사업자등록번호', '기업코드'].includes(req.params.type)) {
+        query = 'SELECT *';
+        query += ' FROM `TB-Company`';
+        if (req.params.type === '사업자등록번호') query += ' WHERE `registerNumber` = ?';
+        else query += ' WHERE `keyCompany` = ?';
+        param = [req.params.value];
       }
-      db_conn.query(query, param, (err, RESULT) => {
-        if (err) {
-          res.json({ error: 9, message: err.message });
-        } else {
-          console.log(RESULT);
-          // res.writeHead(200, { 'Content-Type': 'application/json' });
-          // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT[0] }));
-          // res.end();
-          delete RESULT[0].patent;
-          res.json({ error: 0, message: 'Sucess', data: RESULT[0] });
-        }
-      });
+
+      if (param.length) {
+        db_conn.query(query, param, (err, RESULT) => {
+          if (err) {
+            res.json({ error: 9, message: err.message });
+          } else {
+            console.log(RESULT);
+            // res.writeHead(200, { 'Content-Type': 'application/json' });
+            // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT[0] }));
+            // res.end();
+            delete RESULT[0].patent;
+            res.json({ error: 0, message: 'Sucess', data: RESULT[0] });
+          }
+        });
+      } else res.json({ error: 9, message: req.params.type });
     })
     .catch((err) => {
       res.clearCookie('key');
@@ -174,7 +183,7 @@ app.post("/summarys/:type", (req, res) => {
       var param = [];
       switch (req.params.type) {
         case '기업코드':
-          query = 'SELECT `TB-Company`.`key`';
+          query = 'SELECT `TB-Company`.`key` AS `company`';
           query += ', IFNULL(`TB-Company`.`name`, \'\') AS `name`';
           query += ', IFNULL(`TB-Company`.`registerNumber`, \'\') AS `registerNumber`';
           // query += ', `TB-Company`.`representative`';
@@ -215,38 +224,38 @@ app.post("/summarys/:type", (req, res) => {
             if (filter === 'isVenture') query += ' AND TRIM(IFNULL(`TB-Company`.`isVenture`, \'N\')) = \'Y\'';
 
           });
-          query += ' ORDER BY CASE `key`';
+          query += ' ORDER BY CASE `TB-Company`.`keyCompany`';
           var idx = 0;
           req.body.values.forEach(item => {
             query += ' WHEN ? THEN ?'; param.push(item); param.push(idx++);
           });
           query += ' END ASC';
-          query += ' LIMIT ?, 10;'; param.push((parseInt(req.body.page) - 1) * 10);
+          query += ' LIMIT ?, 9;'; param.push((parseInt(req.body.page) - 1) * 9);
           // param = [req.body.values, (parseInt(req.body.page) - 1) * 10];
           break;
         case '특허등록번호':
           query = 'SELECT `TB-Patent`.`patent`';
           query += ', `TB-Patent`.`inventionTitle`';
-          query += ', `TB-Patent`.`applicationNumber`';
-          query += ', `TB-Patent`.`applicationDate`';
+          // query += ', `TB-Patent`.`applicationNumber`';
+          // query += ', `TB-Patent`.`applicationDate`';
           query += ', `TB-Patent`.`registerNumber`';
-          query += ', `TB-Patent`.`registerDate`';
-          query += ', `TB-Patent`.`expireDate`';
-          query += ', `TB-Patent`.`applicantName`';
-          query += ', `TB-Patent`.`applicantCompany`';
-          query += ', `TB-Patent`.`currentName`';
-          query += ', `TB-Patent`.`currentCompany`';
-          query += ', `TB-Patent`.`internationalApplicationNumber`';
-          query += ', `TB-Patent`.`internationalApplicationDate`';
-          query += ', `TB-Patent`.`internationalPublicationNumber`';
-          query += ', `TB-Patent`.`internationalPublicationDate`';
+          query += ', DATE_FORMAT( `TB-Patent`.`registerDate`, \'%Y-%m-%d\')`registerDate`';
+          // query += ', `TB-Patent`.`expireDate`';
+          // query += ', `TB-Patent`.`applicantName`';
+          // query += ', `TB-Patent`.`applicantCompany`';
+          // query += ', `TB-Patent`.`currentName`';
+          // query += ', `TB-Patent`.`currentCompany`';
+          // query += ', `TB-Patent`.`internationalApplicationNumber`';
+          // query += ', `TB-Patent`.`internationalApplicationDate`';
+          // query += ', `TB-Patent`.`internationalPublicationNumber`';
+          // query += ', `TB-Patent`.`internationalPublicationDate`';
           query += ', `TB-Patent`.`ipcNumber`';
           query += ', `TB-Patent`.`astrtCont`';
-          query += ', `TB-Patent`.`representativeClaim`';
-          query += ', `TB-Patent`.`gradeAppraisal`';
-          query += ', `TB-Patent`.`gradeRight`';
-          query += ', `TB-Patent`.`gradeTech`';
-          query += ', `TB-Patent`.`gradeUse`';
+          // query += ', `TB-Patent`.`representativeClaim`';
+          // query += ', `TB-Patent`.`gradeAppraisal`';
+          // query += ', `TB-Patent`.`gradeRight`';
+          // query += ', `TB-Patent`.`gradeTech`';
+          // query += ', `TB-Patent`.`gradeUse`';
           query += ' FROM `TB-Patent`';
           query += ' WHERE `TB-Patent`.`registerNumber` IN (?)'; param.push(req.body.values);
           if (req.body.filter.length) {
@@ -258,7 +267,7 @@ app.post("/summarys/:type", (req, res) => {
             query += ' WHEN ? THEN ?'; param.push(item); param.push(idx++);
           });
           query += ' END ASC';
-          query += ' LIMIT ?, 10;'; param.push((parseInt(req.body.page) - 1) * 10);
+          query += ' LIMIT ?, 8;'; param.push((parseInt(req.body.page) - 1) * 8);
           // param = [req.body.values, (parseInt(req.body.page) - 1) * 10];
           break;
         default:
@@ -271,7 +280,7 @@ app.post("/summarys/:type", (req, res) => {
           console.log(err);
           res.json({ error: 9, message: err.message });
         } else {
-          res.json({ error: 0, message: 'Sucess', data: RESULT });
+          res.json({ error: 0, message: 'Sucess', page: parseInt(req.body.page), data: RESULT });
         }
       });
     })
@@ -317,24 +326,32 @@ app.get("/detail/:class/:id", (req, res) => {
             query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferDepartment`, \'-\') AS `technologyTransferDepartment`';
             query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferOfficer`, \'-\') AS `technologyTransferOfficer`';
             query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferTel`, \'-\') AS `technologyTransferTel`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q0Assets`, 0) AS `q0Assets`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q0Debt`, 0) AS `q0Debt`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q0Sale`, 0) AS `q0Sale`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q0Profit`, 0) AS `q0Profit`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q0NetProfit`, 0) AS `q0NetProfit`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q1Assets`, 0) AS `q1Assets`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q1Debt`, 0) AS `q1Debt`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q1Sale`, 0) AS `q1Sale`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q1Profit`, 0) AS `q1Profit`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q1NetProfit`, 0) AS `q1NetProfit`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q2Assets`, 0) AS `q2Assets`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q2Debt`, 0) AS `q2Debt`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q2Sale`, 0) AS `q2Sale`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q2Profit`, 0) AS `q2Profit`';
-            query += ', FORMAT(`TB-CompanyFinance`.`q2NetProfit`, 0) AS `q2NetProfit`';
+            query += ', FORMAT(`TB-CompanyFinance0`.`Assets`, 0) AS `q0Assets`';
+            query += ', FORMAT(`TB-CompanyFinance0`.`Debt`, 0) AS `q0Debt`';
+            query += ', FORMAT(`TB-CompanyFinance0`.`Sale`, 0) AS `q0Sale`';
+            query += ', FORMAT(`TB-CompanyFinance0`.`Profit`, 0) AS `q0Profit`';
+            query += ', FORMAT(`TB-CompanyFinance0`.`NetProfit`, 0) AS `q0NetProfit`';
+            query += ', FORMAT(`TB-CompanyFinance1`.`Assets`, 0) AS `q1Assets`';
+            query += ', FORMAT(`TB-CompanyFinance1`.`Debt`, 0) AS `q1Debt`';
+            query += ', FORMAT(`TB-CompanyFinance1`.`Sale`, 0) AS `q1Sale`';
+            query += ', FORMAT(`TB-CompanyFinance1`.`Profit`, 0) AS `q1Profit`';
+            query += ', FORMAT(`TB-CompanyFinance1`.`NetProfit`, 0) AS `q1NetProfit`';
+            query += ', FORMAT(`TB-CompanyFinance2`.`Assets`, 0) AS `q2Assets`';
+            query += ', FORMAT(`TB-CompanyFinance2`.`Debt`, 0) AS `q2Debt`';
+            query += ', FORMAT(`TB-CompanyFinance2`.`Sale`, 0) AS `q2Sale`';
+            query += ', FORMAT(`TB-CompanyFinance2`.`Profit`, 0) AS `q2Profit`';
+            query += ', FORMAT(`TB-CompanyFinance2`.`NetProfit`, 0) AS `q2NetProfit`';
+            query += ', FORMAT(`TB-CompanyFinance3`.`Assets`, 0) AS `q3Assets`';
+            query += ', FORMAT(`TB-CompanyFinance3`.`Debt`, 0) AS `q3Debt`';
+            query += ', FORMAT(`TB-CompanyFinance3`.`Sale`, 0) AS `q3Sale`';
+            query += ', FORMAT(`TB-CompanyFinance3`.`Profit`, 0) AS `q3Profit`';
+            query += ', FORMAT(`TB-CompanyFinance3`.`NetProfit`, 0) AS `q3NetProfit`';
             query += ' FROM `TB-Company`';
-            query += ' INNER JOIN `TB-CompanyDemand` ON `TB-Company`.`key` = `TB-CompanyDemand`.`keyCompany`';
-            query += ' INNER JOIN `TB-CompanyFinance` ON `TB-Company`.`key` = `TB-CompanyFinance`.`keyCompany`';
+            query += ' INNER JOIN `TB-CompanyDemand` ON `TB-Company`.`keyCompany` = `TB-CompanyDemand`.`keyCompany`';
+            query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance0` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance0`.`keyCompany` AND `TB-CompanyFinance0`.`year` = YEAR(NOW()) - 0';
+            query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance1` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance1`.`keyCompany` AND `TB-CompanyFinance1`.`year` = YEAR(NOW()) - 1';
+            query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance2` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance2`.`keyCompany` AND `TB-CompanyFinance2`.`year` = YEAR(NOW()) - 2';
+            query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance3` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance3`.`keyCompany` AND `TB-CompanyFinance3`.`year` = YEAR(NOW()) - 3';
             query += ' WHERE `TB-Company`.`key` = ?'; param.push(req.params.id);
             break;
           case 'patent':
@@ -450,25 +467,39 @@ app.get("/detail/:class/:id", (req, res) => {
 app.get("/news/:keyword/:limit/:page", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
-      var url = 'https://openapi.naver.com/v1/search/news.json'
-        + '?query=' + urlencode(req.params.keyword)
-        + '&display=' + req.params.limit
-        + '&start=' + (((req.params.page - 1) * req.params.limit) + 1);
-      console.log(url);
-      fetch(url, {
-        method: 'GET'
-        , headers: {
-          'X-Naver-Client-Id': 'OT3kieLnav57fVOBXHZN'
-          , 'X-Naver-Client-Secret': 'MZMHVMKiIJ'
+      var query = null;
+      var param = [];
+      query = 'SELECT `name`';
+      query += ' FROM `TB-Company`';
+      query += ' WHERE `key` = ?'; param = [req.params.keyword];
+      db_conn.query(query, param, (err, RESULT) => {
+        if (err) {
+          res.json({ error: 9, message: err.message });
+        } else {
+          console.log(RESULT);
+          var url = 'https://openapi.naver.com/v1/search/news.json'
+            + '?query=' + urlencode(RESULT[0].name)
+            + '&display=' + req.params.limit
+            + '&start=' + (((req.params.page - 1) * req.params.limit) + 1);
+          console.log(url);
+          fetch(url, {
+            method: 'GET'
+            , headers: {
+              'X-Naver-Client-Id': 'OT3kieLnav57fVOBXHZN'
+              , 'X-Naver-Client-Secret': 'MZMHVMKiIJ'
+            }
+          })
+            .then(data => { return data.json(); })
+            .then(RESULT => {
+              res.json({ error: 0, message: 'Sucess', data: RESULT });
+            })
+            .catch(err => {
+              res.json({ error: 9, message: err.message, err: err });
+            });
         }
+
+
       })
-        .then(data => { return data.json(); })
-        .then(RESULT => {
-          res.json({ error: 0, message: 'Sucess', data: RESULT });
-        })
-        .catch(err => {
-          res.json({ error: 9, message: err.message, err: err });
-        });
     })
     .catch((err) => {
       res.clearCookie('key');

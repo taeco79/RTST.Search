@@ -1,18 +1,165 @@
 li { list-style: none; }
 
-form { width: 50%; float: left; }
-#filter { width: 50%; float: right; }
-#filter > ul { display: inline-block; }
-#filter > ul > li { display: inline-block; }
-#filter > ul > li + li { margin-left: 1rem; }
-#summary { clear: both; }
-#summary > ul:empty::after { content: 'Loading...'; 	-webkit-animation:blink 1.5s ease-in-out infinite alternate;
+#frame { padding: 6.5rem 2rem 2rem 2rem; }
+.searchMini {
+  position: fixed;
+  z-index: 999;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 5rem;
+  background-color: #1C2F5F;
+  padding-top: 1.25rem;
+  padding-left: 1.875rem;
+}
+.searchMini > * {
+  height: 2.25rem;
+  line-height: 2.25rem;
+  border-radius: 0.25rem;  
+}
+.searchMini > input {
+  width: 23.5rem;
+  background-color: #FFFFFF;
+  border: 1px solid #DDDDDD;
+  box-shadow: inset 0px 1px 5px rgba(0, 0, 0, 0.1);
+  font-style: normal;
+  font-weight: normal;
+  font-size: 1rem;
+  letter-spacing: -0.04em;
+  color: #555555;
+  line-height: 2.25rem;
+  padding-left: 1.25rem;
+}
+.searchMini > button {
+  position: relative;
+  width: 8.25rem;
+  text-align: right;
+  background-color: #2C6AE3;
+  padding: 0px 1.5rem;
+  border: none;
+  cursor: pointer;
+}
+.searchMini > button:hover { background-color: #5A8BEB; }
+
+.searchMini > button::before {
+  content: '';
+  position: absolute;
+  top: 0px;
+  left: 1.5rem ;
+  background-image: url(/img/ico/search.png);
+  background-repeat: no-repeat;
+  background-position: 0px center;
+  display: inline-block;
+  width: 3.5rem;
+  height: 2.25rem;;
+}
+.searchMini > input + button { margin-left: 1rem; }
+.searchMini > button > span {
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 2.25rem;
+  letter-spacing: -0.04em;
+  color: #FFFFFF;
+}
+.searchMini > button + span {
+  margin-left: 1.5rem;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 0.875rem;
+  letter-spacing: -0.04em;
+
+  color: #FFFFFF;
+}
+
+h1 {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 1.25rem;
+  letter-spacing: -0.04em;
+  color: #333333;
+}
+h1 > span::before { content: ' : '; }
+
+h2 {
+  margin-top: 1rem;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 0.875rem;
+  letter-spacing: -0.04em;
+  color: #333333;
+  opacity: 0.5;
+}
+
+* + ul { margin-top: 1rem; }
+
+ul {
+  width: 100%;
+  padding: 1.25rem 1.5rem;;
+  background: #FFFFFF;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+}
+#summary:empty::after { content: 'Loading...'; 	-webkit-animation:blink 1.5s ease-in-out infinite alternate;
     -moz-animation:blink 1.5s ease-in-out infinite alternate;
     animation:blink 1.5s ease-in-out infinite alternate;
 }
+#summary > li { padding: 0.25rem 0px; }
+#summary > li > div {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 0.875rem;
+  line-height: 150%;
+  letter-spacing: -0.04em;
+  color: #333333;
+}
+#summary > li > div:last-child { padding-left: 3rem; text-indent: 0.5rem; }
+#summary > li > div:first-child {
+  float: left;
+  font-weight: bold;
+  padding-left: 0px;
+}
+#summary > li > div:first-child::after { content: ' : '; }
+
+#filter { width: 100%; }
+#filter::before {
+  content: '필터';
+  font-style: normal;
+  font-weight: bold;
+  font-size: 0.875rem;;
+  letter-spacing: -0.04em;
+  color: #333333;
+}
+#filter > li { display: inline-block; margin-left: 1.5rem; }
+#filter > li > input { margin-right: 0.5rem; }
+
 #result:empty::after { content: 'Loading...'; 	-webkit-animation:blink 1.5s ease-in-out infinite alternate;
     -moz-animation:blink 1.5s ease-in-out infinite alternate;
     animation:blink 1.5s ease-in-out infinite alternate;
 }
 
-#result > li { display: inline-block; margin: 0px 1rem 1rem 0px; border: 1px solid #000000; }
+#result > a { display: inline-block; margin: 1rem 0px 0px 1rem; text-decoration: none; color: inherit; }
+#result > a.company { width: 32%; margin-left: 2%; }
+#result > a.company:nth-child(3n + 1) { margin-left: 0px; }
+
+#result > a.patent { width: 49%; margin-left: 2%; }
+#result > a.patent:nth-child(2n + 1) { margin-left: 0px; }
+
+#result > a:hover > ul { background-color: #DDDDDD; }
+#result > a > ul > li { padding: 0.25rem 0px; }
+#result > a > ul > li > div {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 0.875rem;
+  line-height: 150%;
+  letter-spacing: -0.04em;
+  color: #333333;
+}
+#result > a > ul > li > div:last-child { text-indent: 0.5rem; }
+#result > a > ul > li > div:first-child {
+  float: left;
+  font-weight: bold;
+  padding-left: 0px;
+}
+#result > a > ul > li > div:first-child::after { content: ' : '; }
+
+#result > a > ul > li#inventionTitle > div:last-child { width: calc(100% - 5rem); }
