@@ -206,7 +206,7 @@ app.post("/summarys/:type", (req, res) => {
           // query += ', `TB-CompanyDemand`.`companyName`';
           // query += ', `TB-CompanyDemand`.`registerNumber`';
           // query += ', `TB-CompanyDemand`.`demandingTechnology`';
-          // query += ', `TB-CompanyDemand`.`introductoryIntention`';
+          query += ' , IFNULL(`TB-CompanyDemand`.`introductoryIntention`, \'N\') AS `introductoryIntention`';
           // query += ', `TB-CompanyDemand`.`technologyTransfer`';
           // query += ', `TB-CompanyDemand`.`technologyTransferDepartment`';
           // query += ', `TB-CompanyDemand`.`technologyTransferOfficer`';
@@ -224,7 +224,8 @@ app.post("/summarys/:type", (req, res) => {
             if (filter === 'isVenture') query += ' AND TRIM(IFNULL(`TB-Company`.`isVenture`, \'N\')) = \'Y\'';
 
           });
-          query += ' ORDER BY CASE `TB-Company`.`keyCompany`';
+          query += ' ORDER BY IFNULL(`TB-CompanyDemand`.`introductoryIntention`, \'N\') DESC';
+          query += ' , CASE `TB-Company`.`keyCompany`';
           var idx = 0;
           req.body.values.forEach(item => {
             query += ' WHEN ? THEN ?'; param.push(item); param.push(idx++);
@@ -400,7 +401,9 @@ app.get("/detail/:class/:id", (req, res) => {
               else {
                 console.log(field, value);
                 tmpVAL = value
-                if (field === 'applicantName') {
+                if (field === 'homepage') {
+                  tmpVAL = tmpVAL === '' ? '-' : '<a href="' + tmpVAL + '" target="_blank">' + tmpVAL + '</a>';
+                } else if (field === 'applicantName') {
                   tempKeys = tmpVAL.split('||');
                   tempVals = RESULT[0].applicantCompany.split('||');
                   console.log('##############################');
@@ -844,6 +847,8 @@ app.get("/finance/:id", (req, res) => {
       query += ' LEFT OUTER JOIN `TB-CompanyFinance` ON `TB-Company`.`company` = `TB-CompanyFinance`.`company`';
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
       query += ' AND `TB-Company`.`key` = ?'; param.push(req.params.id);
+      query += ' ORDER BY `TB-CompanyFinance`.`year` DESC';
+      query += ', `TB-CompanyFinance`.`quarter` DESC';
       console.log(query);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {

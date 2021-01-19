@@ -40,7 +40,7 @@ var arrResultField = {
 
 var arrFilterPatent = [
   { id: 1, title: '국내법인' }
-  , { id: 2, title: '국가기관' }
+  , { id: 2, title: '기타법인/국가기관' }
   , { id: 5, title: '외국법인' }
 ];
 
@@ -185,6 +185,8 @@ function showResult(type, value, p) {
             document.querySelector('#result > a:last-child').classList.add('company');
             document.querySelector('#result > a:last-child').setAttribute('target', '_blank');
             document.querySelector('#result > a:last-child').setAttribute('href', '/detail/company/' + record.company);
+            if (record.introductoryIntention === 'Y')
+              document.querySelector('#result > a:last-child').classList.add('introductoryIntention');
             document.querySelector('#result > a:last-child').append(document.createElement('ul'));
             arrResultField.Company.forEach(item => {
               document.querySelector('#result > a:last-child > ul').append(document.createElement('li'));

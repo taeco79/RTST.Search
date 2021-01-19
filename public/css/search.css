@@ -137,12 +137,25 @@ ul {
     animation:blink 1.5s ease-in-out infinite alternate;
 }
 
-#result > a { display: inline-block; margin: 1rem 0px 0px 1rem; text-decoration: none; color: inherit; }
+#result > a { position: relative; display: inline-block; margin: 1rem 0px 0px 1rem; text-decoration: none; color: inherit; }
 #result > a.company { width: 32%; margin-left: 2%; }
 #result > a.company:nth-child(3n + 1) { margin-left: 0px; }
 
 #result > a.patent { width: 49%; margin-left: 2%; }
 #result > a.patent:nth-child(2n + 1) { margin-left: 0px; }
+
+#result > a.introductoryIntention::before {
+  content: '';
+  position: absolute;
+  right: 0.25rem;
+  top: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+  background-image: url(/img/ico/introductoryIntention.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: right top;
+}
 
 #result > a:hover > ul { background-color: #DDDDDD; }
 #result > a > ul > li { padding: 0.25rem 0px; }
