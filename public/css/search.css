@@ -176,3 +176,4 @@ ul {
 #result > a > ul > li > div:first-child::after { content: ' : '; }
 
 #result > a > ul > li#inventionTitle > div:last-child { width: calc(100% - 5rem); }
+#result > a > ul > li#ipcNumber > div:last-child { width: calc(100% - 4rem); }

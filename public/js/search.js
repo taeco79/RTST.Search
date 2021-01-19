@@ -14,8 +14,7 @@ var arrSummaryField = {
     , { id: 'astrtCont', title: '요약문' }
   ]
   , Company: [
-    { id: 'key', title: '기업코드' }
-    , { id: 'name', title: '기업명' }
+    { id: 'name', title: '기업명' }
     , { id: 'registerNumber', title: '사업자등록번호' }
     , { id: 'businessTypes', title: '사업부문명' }
     , { id: 'businessItems', title: '제품명' }
@@ -134,7 +133,7 @@ function showSummary(type, value) {
           document.querySelector('#summary > li:last-child').append(document.createElement('div'));
           document.querySelector('#summary > li:last-child > div:last-child').innerText = item.title;
           document.querySelector('#summary > li:last-child').append(document.createElement('div'));
-          document.querySelector('#summary > li:last-child > div:last-child').append(document.createTextNode(eval('json.data.' + item.id)));
+          document.querySelector('#summary > li:last-child > div:last-child').append(document.createTextNode(eval('json.data.' + item.id) === null ? '-' : eval('json.data.' + item.id)));
         });
       } else {
         document.querySelector('#summary').append(document.createElement('li'));

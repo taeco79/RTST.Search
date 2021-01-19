@@ -25,16 +25,16 @@ h1 > span::before { content: ' : '; }
   margin-top: 1rem;
 }
 
-* + ul { margin-top: 1rem; }
+#frame > * + ul, #frame > * + p { margin-top: 1rem; }
 
-ul {
+#frame > ul, #frame > p {
   width: 100%;
   padding: 1.25rem 1.5rem;;
   background: #FFFFFF;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 0.25rem;
 }
-li { list-style: none; }
+#frame > ul > li { list-style: none; }
 
 #summary > li { padding: 0.25rem 0px; }
 #summary > li:not([class]) { display: inline-block; width: 49%; }
@@ -67,6 +67,9 @@ li { list-style: none; }
 #summary > li.full > span[is="Y"] {
   background-color: #2C6AE3;
 }
+#summary > li.applicantName > div > ul { padding-left: 4.75rem; }
+#summary > li.currentName > div > ul { padding-left: 6rem; }
+#summary > li.ipcNumber > div > ul { padding-left: 5.5rem; }
 
 #finance > li { padding: 0.5rem 0px; }
 #finance > li > div {
@@ -103,6 +106,7 @@ li { list-style: none; }
   opacity: 0.7;
 }
 
+#news > li { padding: 0.3rem 0px; }
 #news > li > a {
   font-style: normal;
   font-weight: bold;

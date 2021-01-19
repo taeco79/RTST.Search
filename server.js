@@ -44,7 +44,7 @@ app.post("/login", (req, res) => {
     } else if (MEMBER.length === 0)
       res.json({ error: 1, message: '아이디 또는 비밀번호가 일치하지 않습니다.' });
     else {
-      console.log('MEMBER', MEMBER);
+      // console.log('MEMBER', MEMBER);
       sql = '';
       sql += 'INSERT INTO `TB-Session`';
       sql += ' SET `Expired` = DATE_ADD(NOW(), INTERVAL 20 MINUTE)';
@@ -53,7 +53,7 @@ app.post("/login", (req, res) => {
       sql += ', `IP` = ?';
       db_conn.query(sql, [MEMBER[0].No, '0.0.0.0'], (err, SESSION) => {
         if (err) {
-          console.log(err);
+          // console.log(err);
           if (err.message.match(/^ER\_NO\_SUCH\_TABLE: Table.+doesn't exist$/)) {
             fn.TB_Session(db_conn, res)
           } else {
@@ -64,7 +64,7 @@ app.post("/login", (req, res) => {
             if (err)
               res.json({ error: 9, message: '시스템 오류(DB::Session::Unknown)가 발생했습니다.' })
             else {
-              console.log('Session', rows);
+              // console.log('Session', rows);
               res.cookie('id', req.body.id, { httpOnly: true, signed: true });
               res.cookie('key', rows[0].Key, { httpOnly: true, signed: true });
               res.cookie('name', MEMBER[0].Name);
@@ -94,14 +94,14 @@ app.all("/logout", (req, res) => {
 });
 
 app.get("/search", (req, res) => {
-  console.log(req.params.page);
+  // console.log(req.params.page);
   fn.logined(db_conn, req)
     .then((data) => {
-      console.log(process.env.API.toString() + '?input_str=' + req.query.q);
+      // console.log(process.env.API.toString() + '?input_str=' + req.query.q);
       fetch(process.env.API.toString() + '?input_str=' + urlencode(req.query.q))
         .then(data => { return data.json(); })
         .then(RESULT => {
-          console.log(RESULT);
+          // console.log(RESULT);
           fs.readFile('./public/htm/search.htm', 'utf8', function (err, HTML) {
             // res.writeHead(200, { 'Content-Type': 'application/json' });
             // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT }));
@@ -159,7 +159,7 @@ app.get("/summary/:type/:value", (req, res) => {
           if (err) {
             res.json({ error: 9, message: err.message });
           } else {
-            console.log(RESULT);
+            // console.log(RESULT);
             // res.writeHead(200, { 'Content-Type': 'application/json' });
             // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT[0] }));
             // res.end();
@@ -278,7 +278,7 @@ app.post("/summarys/:type", (req, res) => {
       }
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
-          console.log(err);
+          // console.log(err);
           res.json({ error: 9, message: err.message });
         } else {
           res.json({ error: 0, message: 'Sucess', page: parseInt(req.body.page), data: RESULT });
@@ -354,6 +354,7 @@ app.get("/detail/:class/:id", (req, res) => {
             query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance2` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance2`.`keyCompany` AND `TB-CompanyFinance2`.`year` = YEAR(NOW()) - 2';
             query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance3` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance3`.`keyCompany` AND `TB-CompanyFinance3`.`year` = YEAR(NOW()) - 3';
             query += ' WHERE `TB-Company`.`key` = ?'; param.push(req.params.id);
+            query += ' OR `TB-Company`.`keyCompany` = ?'; param.push(req.params.id);
             break;
           case 'patent':
             query = 'SELECT `TB-Patent`.`patent`';
@@ -386,10 +387,9 @@ app.get("/detail/:class/:id", (req, res) => {
             console.log(req.params.class);
             console.log('#########################');
         }
-        console.log(query, param);
         db_conn.query(query, param, (err, RESULT) => {
           if (err) {
-            console.log(err);
+            // console.log(err);
             res.json({ error: 9, message: err.message });
           } else {
             let reg = null;
@@ -399,7 +399,7 @@ app.get("/detail/:class/:id", (req, res) => {
             for (const [field, value] of Object.entries(RESULT[0]))
               if (['applicantCompany', 'currentCompany'].includes(field)) continue;
               else {
-                console.log(field, value);
+                // console.log(field, value);
                 tmpVAL = value
                 if (field === 'homepage') {
                   tmpVAL = tmpVAL === '' ? '-' : '<a href="' + tmpVAL + '" target="_blank">' + tmpVAL + '</a>';
@@ -453,7 +453,7 @@ app.get("/detail/:class/:id", (req, res) => {
                   tmpVAL = tmpVAL !== '<ul>' ? tmpVAL + '</ul>' : '';
                 }
                 reg = new RegExp('##' + field + '##', 'gi');
-                HTML = HTML.replace(reg, tmpVAL);
+                HTML = HTML.replace(reg, tmpVAL === null ? '-' : tmpVAL);
               }
             res.writeHead(200, {});
             res.end(HTML);
@@ -474,17 +474,18 @@ app.get("/news/:keyword/:limit/:page", (req, res) => {
       var param = [];
       query = 'SELECT `name`';
       query += ' FROM `TB-Company`';
-      query += ' WHERE `key` = ?'; param = [req.params.keyword];
+      query += ' WHERE `key` = ?'; param.push(req.params.keyword);
+      query += ' OR `keyCompany` = ?'; param.push(req.params.keyword);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
           res.json({ error: 9, message: err.message });
         } else {
-          console.log(RESULT);
+          // console.log(RESULT);
           var url = 'https://openapi.naver.com/v1/search/news.json'
             + '?query=' + urlencode(RESULT[0].name)
             + '&display=' + req.params.limit
             + '&start=' + (((req.params.page - 1) * req.params.limit) + 1);
-          console.log(url);
+          // console.log(url);
           fetch(url, {
             method: 'GET'
             , headers: {
@@ -595,7 +596,7 @@ app.get("/members/:page", (req, res) => {
             if (err) {
               res.json({ error: 9, message: err.message });
             } else {
-              console.log(RESULT);
+              // console.log(RESULT);
               res.json({ error: 0, message: 'Sucess', total: COUNT[0].Count, page: parseInt(req.params.page), data: RESULT });
             }
           });
@@ -623,10 +624,10 @@ app.del("/members", (req, res) => {
       query += ' AND `key` IN (?)'; param.push(req.body.ids);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
-          console.log(err);
+          // console.log(err);
           res.json({ error: 9, message: err.message });
         } else {
-          console.log(RESULT);
+          // console.log(RESULT);
           res.json({ error: 0, message: 'Sucess', data: RESULT });
         }
       });
@@ -654,7 +655,7 @@ app.del("/member/:id", (req, res) => {
         if (err) {
           res.json({ error: 9, message: err.message });
         } else {
-          console.log(RESULT);
+          // console.log(RESULT);
           res.json({ error: 0, message: 'Sucess', data: RESULT });
         }
       });
@@ -680,10 +681,10 @@ app.put("/member/:id", (req, res) => {
       query += ' AND `key` = ?'; param.push(req.params.id);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
-          console.log(err);
+          // console.log(err);
           res.json({ error: 9, message: err.message });
         } else {
-          console.log(RESULT);
+          // console.log(RESULT);
           res.json({ error: 0, message: 'Sucess', data: RESULT, info: { key: req.params.id, name: req.body.name } });
         }
       });
@@ -703,7 +704,7 @@ app.get("/companys/:page", (req, res) => {
       query = 'SELECT COUNT(*) AS `Count`';
       query += ' FROM `TB-Company`';
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
-      console.log(query);
+      // console.log(query);
       db_conn.query(query, param, (err, COUNT) => {
         if (err) {
           res.json({ error: 99, message: err.message });
@@ -733,13 +734,13 @@ app.get("/companys/:page", (req, res) => {
           // query += ', `ked`';
           query += ' FROM `TB-Company`';
           query += ' WHERE `TB-Company`.`isDeleted` = 0';
-          console.log(query);
+          // console.log(query);
           query += ' LIMIT ?, 10;'; param.push((parseInt(req.params.page) - 1) * 10);
           db_conn.query(query, param, (err, RESULT) => {
             if (err) {
               res.json({ error: 9, message: err.message });
             } else {
-              console.log(RESULT);
+              // console.log(RESULT);
               res.json({ error: 0, message: 'Sucess', total: COUNT[0].Count, page: parseInt(req.params.page), data: RESULT });
             }
           });
@@ -782,12 +783,12 @@ app.get("/company/:id", (req, res) => {
       query += ' FROM `TB-Company`';
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
       query += ' AND `TB-Company`.`key` = ?'; param.push(req.params.id);
-      console.log(query);
+      // console.log(query);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
           res.json({ error: 9, message: err.message });
         } else {
-          console.log(RESULT);
+          // console.log(RESULT);
           res.json({ error: 0, message: 'Sucess', data: RESULT });
         }
       });
@@ -813,13 +814,15 @@ app.get("/demand/:id", (req, res) => {
       query += ' FROM `TB-Company`';
       query += ' LEFT OUTER JOIN `TB-CompanyDemand` ON `TB-Company`.`company` = `TB-CompanyDemand`.`company`';
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
-      query += ' AND `TB-Company`.`key` = ?'; param.push(req.params.id);
-      console.log(query);
+      query += ' AND ';
+      query += ' (`TB-Company`.`key` = ?'; param.push(req.params.id);
+      query += ' OR `TB-Company`.`keyCompany` = ?)'; param.push(req.params.id);
+      // console.log(query);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
           res.json({ error: 9, message: err.message });
         } else {
-          console.log(RESULT);
+          // console.log(RESULT);
           res.json({ error: 0, message: 'Sucess', data: RESULT });
         }
       });
@@ -838,23 +841,25 @@ app.get("/finance/:id", (req, res) => {
       var param = [];
       query = 'SELECT `TB-CompanyFinance`.`year`';
       query += ', `TB-CompanyFinance`.`quarter`';
-      query += ', `TB-CompanyFinance`.`Assets`';
-      query += ', `TB-CompanyFinance`.`Debt`';
-      query += ', `TB-CompanyFinance`.`Sale`';
-      query += ', `TB-CompanyFinance`.`Profit`';
-      query += ', `TB-CompanyFinance`.`NetProfit`';
+      query += ', IFNULL(`TB-CompanyFinance`.`Assets`, 0) AS `Assets`';
+      query += ', IFNULL(`TB-CompanyFinance`.`Debt`, 0) AS `Debt`';
+      query += ', IFNULL(`TB-CompanyFinance`.`Sale`, 0) AS `Sale`';
+      query += ', IFNULL(`TB-CompanyFinance`.`Profit`, 0) AS `Profit`';
+      query += ', IFNULL(`TB-CompanyFinance`.`NetProfit`, 0) AS `NetProfit`';
       query += ' FROM `TB-Company`';
       query += ' LEFT OUTER JOIN `TB-CompanyFinance` ON `TB-Company`.`company` = `TB-CompanyFinance`.`company`';
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
-      query += ' AND `TB-Company`.`key` = ?'; param.push(req.params.id);
+      query += ' AND';
+      query += ' (`TB-Company`.`key` = ?'; param.push(req.params.id);
+      query += ' OR `TB-Company`.`keyCompany` = ?)'; param.push(req.params.id);
       query += ' ORDER BY `TB-CompanyFinance`.`year` DESC';
       query += ', `TB-CompanyFinance`.`quarter` DESC';
-      console.log(query);
+      // console.log(query);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
           res.json({ error: 9, message: err.message });
         } else {
-          console.log(RESULT);
+          // console.log(RESULT);
           res.json({ error: 0, message: 'Sucess', data: RESULT });
         }
       });
@@ -881,7 +886,7 @@ app.get("*", (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err.message);
+      // console.log(err.message);
       res.clearCookie('key');
       res.clearCookie('name');
       fs.readFile('./public/htm/login.htm', 'utf8', function (err, data) {

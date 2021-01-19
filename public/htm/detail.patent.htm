@@ -12,85 +12,84 @@
 </head>
 
 <body>
-  <h4>특허정보</h4>
-  <table>
-    <tr>
-      <th>발명의 명칭</th>
-      <td>##inventionTitle##</td>
-    </tr>
-    <tr>
-      <th>특허출원번호</th>
-      <td>##applicationNumber##</td>
-    </tr>
-    <tr>
-      <th>특허출원일</th>
-      <td>##applicationDate##</td>
-    </tr>
-    <tr>
-      <th>특허등록번호</th>
-      <td>##registerNumber##</td>
-    </tr>
-    <tr>
-      <th>특허등록일</th>
-      <td>##registerDate##</td>
-    </tr>
-    <tr>
-      <th>존속기간 만료일</th>
-      <td>##expireDate##</td>
-    </tr>
-    <tr>
-      <th>출원인</th>
-      <td>##applicantName##</td>
-    </tr>
-    <tr>
-      <th>현재권리자</th>
-      <td>##currentName##</td>
-    </tr>
-    <tr>
-      <th>국제출원번호</th>
-      <td>##internationalApplicationNumber##</td>
-    </tr>
-    <tr>
-      <th>국제출원일</th>
-      <td>##internationalApplicationDate##</td>
-    </tr>
-    <tr>
-      <th>국제공개번호</th>
-      <td>##internationalPublicationNumber##</td>
-    </tr>
-    <tr>
-      <th>국제공개일</th>
-      <td>##internationalPublicationDate##</td>
-    </tr>
-    <tr>
-      <th>전체 IPC</th>
-      <td>##ipcNumber##</td>
-    </tr>
-    <!-- <tr>
-      <th>요약</th>
-      <td>##astrtCont##</td>
-    </tr>
-    <tr>
-      <th>대표청구항</th>
-      <td>##representativeClaim##</td>
-    </tr> -->
-    <tr>
-      <th>특허평가등급</th>
-      <td>##gradeAppraisal##</td>
-    </tr>
-    <tr>
-      <th>권리등급</th>
-      <td>##gradeRight##</td>
-    </tr>
-    <tr>
-      <th>기술등급</th>
-      <td>##gradeTech##</td>
-    </tr>
-    <tr>
-      <th>활용등급</th>
-      <td>##gradeUse##</td>
-    </tr>
-  </table>
+  <div id="frame">
+    <h1>특허정보<span>##inventionTitle##</span></h1>
+    <h2>개요</h2>
+    <ul id="summary">
+      <li>
+        <div>발명의 명칭</div>
+        <div>##inventionTitle##</div>
+      </li>
+      <li>
+        <div>존속기간 만료일</div>
+        <div>##expireDate##</div>
+      </li>
+      <li>
+        <div>특허출원번호</div>
+        <div>##applicationNumber##</div>
+      </li>
+      <li>
+        <div>특허출원일</div>
+        <div>##applicationDate##</div>
+      </li>
+      <li>
+        <div>특허등록번호</div>
+        <div>##registerNumber##</div>
+      </li>
+      <li>
+        <div>특허등록일</div>
+        <div>##registerDate##</div>
+      </li>
+      <li class="applicantName">
+        <div>출원인</div>
+        <div>##applicantName##</div>
+      </li>
+      <li class="currentName">
+        <div>현재권리자</div>
+        <div>##currentName##</div>
+      </li>
+      <li>
+        <div>국제출원번호</div>
+        <div>##internationalApplicationNumber##</div>
+      </li>
+      <li>
+        <div>국제출원일</div>
+        <div>##internationalApplicationDate##</div>
+      </li>
+      <li>
+        <div>국제공개번호</div>
+        <div>##internationalPublicationNumber##</div>
+      </li>
+      <li>
+        <div>국제공개일</div>
+        <div>##internationalPublicationDate##</div>
+      </li>
+      <li>
+        <div>특허평가등급</div>
+        <div>##gradeAppraisal##</div>
+      </li>
+      <li>
+        <div>권리등급</div>
+        <div>##gradeRight##</div>
+      </li>
+      <li>
+        <div>기술등급</div>
+        <div>##gradeTech##</div>
+      </li>
+      <li>
+        <div>활용등급</div>
+        <div>##gradeUse##</div>
+      </li>
+      <li class="ipcNumber">
+        <div>전체 IPC</div>
+        <div>##ipcNumber##</div>
+      </li>
+    </ul>
+    <h2>요약</h2>
+    <p>##astrtCont##</p>
+    <h2>대표청구항</h2>
+    <p>##representativeClaim##</p>
+  </div>
 </body>
 
 </html>
