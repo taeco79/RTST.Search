@@ -79,6 +79,15 @@ h1 {
 #summary > li.currentName > div > ul { padding-left: 6rem; }
 #summary > li.ipcNumber > div > ul { padding-left: 5.5rem; }
 
+#summary > li > div > span.applicationDate:not(:empty)::before { content: ' (출원일 : '; }
+#summary > li > div > span.applicationDate:not(:empty)::after { content: ')'; }
+#summary > li > div > span.registerDate:not(:empty)::before { content: ' (등록일 : '; }
+#summary > li > div > span.registerDate:not(:empty)::after { content: ')'; }
+#summary > li > div > span.internationalApplicationDate:not(:empty)::before { content: ' (출원일 : '; }
+#summary > li > div > span.internationalApplicationDate:not(:empty)::after { content: ')'; }
+#summary > li > div > span.internationalPublicationDate:not(:empty)::before { content: ' (공개일 : '; }
+#summary > li > div > span.internationalPublicationDate:not(:empty)::after { content: ')'; }
+
 #finance > li { padding: 0.5rem 0px; }
 #finance > li > div {
   display: inline-block;
