@@ -64,16 +64,25 @@ function getDemand() {
     .then(function (json) {
       if (checkError(json)) {
         document.querySelector('#demand').appendChild(document.createElement('li'));
-        ['수요기술', '기술도입의향', '기술이전', '기술이전전담부서', '수요기술담당자', '수요기술담당자연락처'].forEach(function (item) {
+        document.querySelector('#demand > li:last-child').appendChild(document.createElement('div'));
+        document.querySelector('#demand > li:last-child > div:last-child').classList.add('title');
+        document.querySelector('#demand > li:last-child > div:last-child').innerText = '수요기술';
+        document.querySelector('#demand > li:last-child').appendChild(document.createElement('div'));
+        document.querySelector('#demand > li:last-child > div:last-child').innerText = json.data[0].demandingTechnology === null ? '-' : json.data[0].demandingTechnology;
+
+        document.querySelector('#demand').appendChild(document.createElement('li'));
+        ['기술도입의향', '기술이전', '기술이전전담부서', '수요기술담당자', '수요기술담당자연락처'].forEach(function (item) {
           document.querySelector('#demand > li:last-child').appendChild(document.createElement('div'));
           document.querySelector('#demand > li:last-child > div:last-child').classList.add('title');
           document.querySelector('#demand > li:last-child > div:last-child').innerText = item;
         });
         document.querySelector('#demand').appendChild(document.createElement('li'));
-        for (const [field, value] of Object.entries(json.data[0])) {
-          document.querySelector('#demand > li:last-child').appendChild(document.createElement('div'));
-          document.querySelector('#demand > li:last-child > div:last-child').innerText = value === null ? '-' : value;
-        }
+        for (const [field, value] of Object.entries(json.data[0]))
+          if (['demandingTechnology'].includes(field)) continue;
+          else {
+            document.querySelector('#demand > li:last-child').appendChild(document.createElement('div'));
+            document.querySelector('#demand > li:last-child > div:last-child').innerText = value === null ? '-' : value;
+          }
       } else {
         console.log('Here');
       }
