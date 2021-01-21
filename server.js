@@ -122,7 +122,14 @@ app.get("/search", (req, res) => {
           });
         })
         .catch(err => {
-          res.redirect('/');
+          // console.log(RESULT);
+          fs.readFile('./public/htm/search.htm', 'utf8', function (err, HTML) {
+            HTML = HTML.toString().replace(/##RESULT##/gi, JSON.stringify({ "input": { "type": null, "value": req.query.q }, "output": { "status": "Not working", "type": null, "value": [] } }));
+
+            HTML = HTML.toString().replace(/##search##/gi, req.query.q);
+            HTML = HTML.replace(/##Message##/gi, '특허 검색 시스템이 동작하지 않습니다.');
+            res.end(HTML);
+          });
         });
     })
     .catch((err) => {
