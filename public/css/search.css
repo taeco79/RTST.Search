@@ -141,7 +141,10 @@ ul {
     animation:blink 1.5s ease-in-out infinite alternate;
 }
 
-#result > a { position: relative; display: inline-block; margin: 1rem 0px 0px 1rem; text-decoration: none; color: inherit; }
+#result > a { position: relative;
+  display: inline-block;
+  display: -webkit-inline-flex;
+  margin: 1rem 0px 0px 1rem; text-decoration: none; color: inherit; }
 #result > a.company { width: 32%; margin-left: 2%; }
 #result > a.company:nth-child(3n + 1) { margin-left: 0px; }
 

@@ -63,7 +63,7 @@ window.onload = function () {
     if (SEARCH.output.status !== 'Found')
       throw '검색 결과가 없습니다.';
 
-    // document.querySelector('#frame').append(document.createElement('ul'));
+    // document.querySelector('#frame').appendChild(document.createElement('ul'));
     // document.querySelector('#frame > ul:last-child').setAttribute('id', 'result');
 
     showSummary(SEARCH.input.type, SEARCH.input.value);
@@ -76,44 +76,44 @@ window.onload = function () {
 }
 
 function showFilter(type, value) {
-  document.querySelector('#frame').append(document.createElement('h2'));
+  document.querySelector('#frame').appendChild(document.createElement('h2'));
   document.querySelector('#frame > h2:last-child').innerText = '검색 결과';
 
-  document.querySelector('#frame').append(document.createElement('ul'));
+  document.querySelector('#frame').appendChild(document.createElement('ul'));
   document.querySelector('#frame > ul:last-child').setAttribute('id', 'filter');
   document.querySelector('#frame > ul:last-child').setAttribute('class', type);
 
   while (document.querySelectorAll('#filter > li').length)
     document.querySelectorAll('#filter > li')[0].remove();
 
-  (arrString.Company.includes(type) ? arrFilterCompany : arrFilterPatent).forEach(item => {
-    document.querySelector('#filter').append(document.createElement('li'));
-    document.querySelector('#filter > li:last-child').append(document.createElement('input'));
+  (arrString.Company.includes(type) ? arrFilterCompany : arrFilterPatent).forEach(function (item) {
+    document.querySelector('#filter').appendChild(document.createElement('li'));
+    document.querySelector('#filter > li:last-child').appendChild(document.createElement('input'));
     document.querySelector('#filter > li:last-child > input').setAttribute('type', 'checkbox');
     document.querySelector('#filter > li:last-child > input').setAttribute('id', 'currentName' + item.id);
     document.querySelector('#filter > li:last-child > input').setAttribute('name', 'currentName[]');
     document.querySelector('#filter > li:last-child > input').setAttribute('value', item.id);
-    document.querySelector('#filter > li:last-child').append(document.createElement('label'));
+    document.querySelector('#filter > li:last-child').appendChild(document.createElement('label'));
     document.querySelector('#filter > li:last-child > label').setAttribute('for', 'currentName' + item.id);
-    document.querySelector('#filter > li:last-child > label').append(document.createTextNode(item.title));
+    document.querySelector('#filter > li:last-child > label').appendChild(document.createTextNode(item.title));
   });
-  document.querySelectorAll('#filter input').forEach(el => {
-    el.addEventListener('change', function (e) {
+
+  for (var i = 0; i < document.querySelectorAll('#filter input').length; i++)
+    document.querySelectorAll('#filter input')[i].addEventListener('change', function (e) {
       showResult(SEARCH.output.type, SEARCH.output.value, 1);
     });
-  });
 }
 
 function showSummary(type, value) {
-  document.querySelector('#frame').append(document.createElement('h1'));
+  document.querySelector('#frame').appendChild(document.createElement('h1'));
   document.querySelector('#frame > h1').innerText = type;
   document.querySelector('#frame > h1').appendChild(document.createElement('span'));
   document.querySelector('#frame > h1 > span').innerText = value;
 
-  document.querySelector('#frame').append(document.createElement('h2'));
+  document.querySelector('#frame').appendChild(document.createElement('h2'));
   document.querySelector('#frame > h2').innerText = '요약';
 
-  document.querySelector('#frame').append(document.createElement('ul'));
+  document.querySelector('#frame').appendChild(document.createElement('ul'));
   document.querySelector('#frame > ul:last-child').setAttribute('id', 'summary');
   fetch('/summary/' + type + '/' + value)
     .then(function (res) { return res.json(); })
@@ -128,37 +128,36 @@ function showSummary(type, value) {
         else
           throw type;
 
-        arrSummary.forEach(item => {
-          document.querySelector('#summary').append(document.createElement('li'));
+        arrSummary.forEach(function (item) {
+          document.querySelector('#summary').appendChild(document.createElement('li'));
           document.querySelector('#summary > li:last-child').setAttribute('id', item.id);
-          document.querySelector('#summary > li:last-child').append(document.createElement('div'));
+          document.querySelector('#summary > li:last-child').appendChild(document.createElement('div'));
           document.querySelector('#summary > li:last-child > div:last-child').innerText = item.title;
-          document.querySelector('#summary > li:last-child').append(document.createElement('div'));
-          document.querySelector('#summary > li:last-child > div:last-child').append(document.createTextNode(eval('json.data.' + item.id) === null ? '-' : eval('json.data.' + item.id)));
+          document.querySelector('#summary > li:last-child').appendChild(document.createElement('div'));
+          document.querySelector('#summary > li:last-child > div:last-child').appendChild(document.createTextNode(eval('json.data.' + item.id) === null ? '-' : eval('json.data.' + item.id)));
         });
       } else {
-        document.querySelector('#summary').append(document.createElement('li'));
+        document.querySelector('#summary').appendChild(document.createElement('li'));
         document.querySelector('#summary > li:last-child').classList.add('error')
         document.querySelector('#summary > li:last-child').innerText = json.message;
       }
     })
-    .catch(err => {
+    .catch(function (err) {
       console.log('Summary', 'catch', err);
     });
 }
 
 function showResult(type, value, p) {
   if (document.querySelectorAll('#result').length === 0) {
-    document.querySelector('#frame').append(document.createElement('div'));
+    document.querySelector('#frame').appendChild(document.createElement('div'));
     document.querySelector('#frame > div:last-child').setAttribute('id', 'result');
   }
 
   document.querySelector('#result').innerHTML = '';
 
   var filters = [];
-  document.querySelectorAll('#filter input:checked').forEach(el => {
-    filters.push(el.value);
-  });
+  for (var i = 0; i < document.querySelectorAll('#filter input:checked').length; i++)
+    filters.push(document.querySelectorAll('#filter input:checked')[i].value);
 
   fetch('/summarys/' + type, {
     method: 'POST'
@@ -177,73 +176,74 @@ function showResult(type, value, p) {
         document.querySelector('#result > div').remove();
 
       if (checkError(json)) {
+        var limit = 10;
         console.log('Summarys', 'then', json);
 
-        json.data.forEach(record => {
-          document.querySelector('#result').append(document.createElement('a'));
+        json.data.forEach(function (record) {
+          document.querySelector('#result').appendChild(document.createElement('a'));
           if (arrString.Company.includes(type)) {
             document.querySelector('#result > a:last-child').classList.add('company');
             document.querySelector('#result > a:last-child').setAttribute('target', '_blank');
             document.querySelector('#result > a:last-child').setAttribute('href', '/detail/company/' + record.company);
             if (record.introductoryIntention === 'Y')
               document.querySelector('#result > a:last-child').classList.add('introductoryIntention');
-            document.querySelector('#result > a:last-child').append(document.createElement('ul'));
-            arrResultField.Company.forEach(item => {
-              document.querySelector('#result > a:last-child > ul').append(document.createElement('li'));
+            document.querySelector('#result > a:last-child').appendChild(document.createElement('ul'));
+            arrResultField.Company.forEach(function (item) {
+              document.querySelector('#result > a:last-child > ul').appendChild(document.createElement('li'));
               document.querySelector('#result > a:last-child > ul > li:last-child').setAttribute('id', item.id);
-              document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('div'));
+              document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
               document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').innerText = item.title;
               switch (item.id) {
                 // case 'name':
-                //   document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('a'));
+                //   document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('a'));
                 //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
                 //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('href', '/detail/company/' + record.key);
-                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').append(document.createTextNode(eval('record.' + item.id)));
+                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').appendChild(document.createTextNode(eval('record.' + item.id)));
                 //   break;
                 default:
-                  document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('div'));
+                  document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
                   document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['사업부문명', '제품명'].includes(item.title) ? 'ellipsis-2' : 'ellipsis-1')
-                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').append(document.createTextNode(eval('record.' + item.id)));
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').appendChild(document.createTextNode(eval('record.' + item.id)));
               }
             });
-
-            showPaging(SEARCH.output.value.length, json.page, 9);
+            limit = 9;
           } else if (arrString.Patent.includes(type)) {
             document.querySelector('#result > a:last-child').classList.add('patent');
             document.querySelector('#result > a:last-child').setAttribute('target', '_blank');
             document.querySelector('#result > a:last-child').setAttribute('href', '/detail/patent/' + record.registerNumber);
-            document.querySelector('#result > a:last-child').append(document.createElement('ul'));
-            arrResultField.Patent.forEach(item => {
-              document.querySelector('#result > a:last-child > ul').append(document.createElement('li'));
+            document.querySelector('#result > a:last-child').appendChild(document.createElement('ul'));
+            arrResultField.Patent.forEach(function (item) {
+              document.querySelector('#result > a:last-child > ul').appendChild(document.createElement('li'));
               document.querySelector('#result > a:last-child > ul > li:last-child').setAttribute('id', item.id);
-              document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('div'));
+              document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
               document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').innerText = item.title;
               switch (item.id) {
                 // case 'registerNumber':
-                //   document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('a'));
+                //   document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('a'));
                 //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
                 //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('href', '/detail/patent/' + record.registerNumber);
-                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').append(document.createTextNode(eval('record.' + item.id)));
+                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').appendChild(document.createTextNode(eval('record.' + item.id)));
                 //   break;
                 default:
-                  document.querySelector('#result > a:last-child > ul > li:last-child').append(document.createElement('div'));
+                  document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
                   document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['요약문'].includes(item.title) ? 'ellipsis-2' : 'ellipsis-1')
-                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').append(document.createTextNode(eval('record.' + item.id)));
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').appendChild(document.createTextNode(eval('record.' + item.id)));
               }
             });
 
-            showPaging(SEARCH.output.value.length, json.page, 8);
+            limit = 8;
           } else {
             console.log('#########################');
             console.log(type);
             console.log('#########################');
           }
         });
+        showPaging(SEARCH.output.value.length, json.page, limit);
       } else {
         console.log('Here');
       }
     })
-    .catch(err => {
+    .catch(function (err) {
       console.log('Summary', 'catch', err);
     });
 }

@@ -12,33 +12,33 @@ function showMenu() {
     if (document.querySelectorAll('#menu').length)
       throw '메뉴가 이미 활성화 상태입니다.';
 
-    document.querySelector('.searchMini').append(document.createElement('div'));
+    document.querySelector('.searchMini').appendChild(document.createElement('div'));
     document.querySelector('.searchMini > div:last-child').setAttribute('id', 'menu')
-    document.querySelector('.searchMini> div#menu').append(document.createElement('a'));
-    document.querySelector('.searchMini> div#menu > a').append(document.createTextNode(decodeURI(getCookie('name'))));
-    document.querySelector('.searchMini> div#menu').append(document.createElement('ul'));
+    document.querySelector('.searchMini> div#menu').appendChild(document.createElement('a'));
+    document.querySelector('.searchMini> div#menu > a').appendChild(document.createTextNode(decodeURI(getCookie('name'))));
+    document.querySelector('.searchMini> div#menu').appendChild(document.createElement('ul'));
     if (!location.pathname.match(/^\/(|search)$/)) {
-      document.querySelector('.searchMini> div#menu > ul').append(document.createElement('li'));
-      document.querySelector('.searchMini> div#menu > ul > li:last-child').append(document.createElement('a'));
+      document.querySelector('.searchMini> div#menu > ul').appendChild(document.createElement('li'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child').appendChild(document.createElement('a'));
       document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/');
-      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').append(document.createTextNode('Home'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').appendChild(document.createTextNode('Home'));
     }
     if (!location.pathname.match(/^\/management\/members/)) {
-      document.querySelector('.searchMini> div#menu > ul').append(document.createElement('li'));
-      document.querySelector('.searchMini> div#menu > ul > li:last-child').append(document.createElement('a'));
+      document.querySelector('.searchMini> div#menu > ul').appendChild(document.createElement('li'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child').appendChild(document.createElement('a'));
       document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/management/members');
-      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').append(document.createTextNode('Members'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').appendChild(document.createTextNode('Members'));
     }
     if (!location.pathname.match(/^\/management\/companys/)) {
-      document.querySelector('.searchMini> div#menu > ul').append(document.createElement('li'));
-      document.querySelector('.searchMini> div#menu > ul > li:last-child').append(document.createElement('a'));
+      document.querySelector('.searchMini> div#menu > ul').appendChild(document.createElement('li'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child').appendChild(document.createElement('a'));
       document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/management/companys');
-      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').append(document.createTextNode('Companys'));
+      document.querySelector('.searchMini> div#menu > ul > li:last-child > a').appendChild(document.createTextNode('Companys'));
     }
-    document.querySelector('.searchMini> div#menu > ul').append(document.createElement('li'));
-    document.querySelector('.searchMini> div#menu > ul > li:last-child').append(document.createElement('a'));
+    document.querySelector('.searchMini> div#menu > ul').appendChild(document.createElement('li'));
+    document.querySelector('.searchMini> div#menu > ul > li:last-child').appendChild(document.createElement('a'));
     document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/logout');
-    document.querySelector('.searchMini> div#menu > ul > li:last-child > a').append(document.createTextNode('Logout'));
+    document.querySelector('.searchMini> div#menu > ul > li:last-child > a').appendChild(document.createTextNode('Logout'));
   } catch (err) {
     console.log(err.message);
   }
@@ -57,8 +57,8 @@ function optionalMessage(idx) {
 }
 
 
-function showPaging(total, page, limit = null) {
-  if (limit !== null)
+function showPaging(total, page, limit) {
+  if (typeof (limit) !== 'undefined')
     LIMIT = limit;
   while (document.querySelectorAll('#paging > *').length)
     document.querySelector('#paging > *').remove();
@@ -69,70 +69,68 @@ function showPaging(total, page, limit = null) {
   console.log(total, page, pages, LIMIT);
 
   if (document.querySelectorAll('#paging').length === 0) {
-    document.querySelector('#frame').append(document.createElement('ul'));
+    document.querySelector('#frame').appendChild(document.createElement('ul'));
     document.querySelector('#frame > ul:last-child').setAttribute('id', 'paging');
   }
 
-  document.querySelector('#paging').append(document.createElement('li'));
-  document.querySelector('#paging > li:last-child').append(document.createElement('input'));
+  document.querySelector('#paging').appendChild(document.createElement('li'));
+  document.querySelector('#paging > li:last-child').appendChild(document.createElement('input'));
   document.querySelector('#paging > li:last-child > input').setAttribute('type', 'radio');
   document.querySelector('#paging > li:last-child > input').setAttribute('id', 'pFirst');
   document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
   document.querySelector('#paging > li:last-child > input').setAttribute('value', 1);
-  document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+  document.querySelector('#paging > li:last-child').appendChild(document.createElement('label'));
   document.querySelector('#paging > li:last-child > label:last-child').classList.add('first');
   document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'pFirst');
 
-  document.querySelector('#paging').append(document.createElement('li'));
-  document.querySelector('#paging > li:last-child').append(document.createElement('input'));
+  document.querySelector('#paging').appendChild(document.createElement('li'));
+  document.querySelector('#paging > li:last-child').appendChild(document.createElement('input'));
   document.querySelector('#paging > li:last-child > input').setAttribute('type', 'radio');
   document.querySelector('#paging > li:last-child > input').setAttribute('id', 'pPrev');
   document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
   document.querySelector('#paging > li:last-child > input').setAttribute('value', start > 20 ? start - 10 : 1);
-  document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+  document.querySelector('#paging > li:last-child').appendChild(document.createElement('label'));
   document.querySelector('#paging > li:last-child > label:last-child').classList.add('prev');
   document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'pPrev');
 
   for (var p = start; p <= end; p++) {
-    document.querySelector('#paging').append(document.createElement('li'));
-    document.querySelector('#paging > li:last-child').append(document.createElement('input'));
+    document.querySelector('#paging').appendChild(document.createElement('li'));
+    document.querySelector('#paging > li:last-child').appendChild(document.createElement('input'));
     document.querySelector('#paging > li:last-child > input').setAttribute('type', 'radio');
     document.querySelector('#paging > li:last-child > input').setAttribute('id', 'p' + p);
     document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
     document.querySelector('#paging > li:last-child > input').setAttribute('value', p);
     if (page === p)
       document.querySelector('#paging > li:last-child > input').setAttribute('checked', true);
-    document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+    document.querySelector('#paging > li:last-child').appendChild(document.createElement('label'));
     document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'p' + p);
-    document.querySelector('#paging > li:last-child > label:last-child').append(document.createTextNode(p));
+    document.querySelector('#paging > li:last-child > label:last-child').appendChild(document.createTextNode(p));
   }
 
-  document.querySelector('#paging').append(document.createElement('li'));
-  document.querySelector('#paging > li:last-child').append(document.createElement('input'));
+  document.querySelector('#paging').appendChild(document.createElement('li'));
+  document.querySelector('#paging > li:last-child').appendChild(document.createElement('input'));
   document.querySelector('#paging > li:last-child > input').setAttribute('type', 'radio');
   document.querySelector('#paging > li:last-child > input').setAttribute('id', 'pNext');
   document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
   document.querySelector('#paging > li:last-child > input').setAttribute('value', pages > end + 1 ? start + 10 : pages);
-  document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+  document.querySelector('#paging > li:last-child').appendChild(document.createElement('label'));
   document.querySelector('#paging > li:last-child > label:last-child').classList.add('next');
   document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'pNext');
 
-  document.querySelector('#paging').append(document.createElement('li'));
-  document.querySelector('#paging > li:last-child').append(document.createElement('input'));
+  document.querySelector('#paging').appendChild(document.createElement('li'));
+  document.querySelector('#paging > li:last-child').appendChild(document.createElement('input'));
   document.querySelector('#paging > li:last-child > input').setAttribute('type', 'radio');
   document.querySelector('#paging > li:last-child > input').setAttribute('id', 'pLast');
   document.querySelector('#paging > li:last-child > input').setAttribute('name', 'p');
   document.querySelector('#paging > li:last-child > input').setAttribute('value', pages);
-  document.querySelector('#paging > li:last-child').append(document.createElement('label'));
+  document.querySelector('#paging > li:last-child').appendChild(document.createElement('label'));
   document.querySelector('#paging > li:last-child > label:last-child').classList.add('last');
   document.querySelector('#paging > li:last-child > label:last-child').setAttribute('for', 'pLast');
 
-  document.querySelectorAll('#paging input').forEach(el => {
-    el.addEventListener('change', function (e) {
-
+  for (var i = 0; i < document.querySelectorAll('#paging input').length; i++)
+    document.querySelectorAll('#paging input')[i].addEventListener('change', function (e) {
       changePage(parseInt(document.querySelector('#paging input:checked').value));
     });
-  });
 }
 
 function checkError(result) {
