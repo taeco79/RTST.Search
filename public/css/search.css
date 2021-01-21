@@ -133,6 +133,7 @@ ul {
   letter-spacing: -0.04em;
   color: #333333;
 }
+#filter.patent::before { content: '현재 권리자'; }
 #filter > li { display: inline-block; margin-left: 1.5rem; }
 #filter > li > input { margin-right: 0.5rem; }
 

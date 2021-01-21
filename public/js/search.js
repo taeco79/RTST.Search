@@ -81,7 +81,7 @@ function showFilter(type, value) {
 
   document.querySelector('#frame').appendChild(document.createElement('ul'));
   document.querySelector('#frame > ul:last-child').setAttribute('id', 'filter');
-  document.querySelector('#frame > ul:last-child').setAttribute('class', type);
+  document.querySelector('#frame > ul:last-child').classList.add(['특허등록번호'].includes(type) ? 'patent' : 'company');
 
   while (document.querySelectorAll('#filter > li').length)
     document.querySelectorAll('#filter > li')[0].remove();
