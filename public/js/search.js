@@ -179,6 +179,7 @@ function showResult(type, value, p) {
         var limit = 10;
         console.log('Summarys', 'then', json);
 
+        if (json.data.length === 0) throw 'none-content';
         json.data.forEach(function (record) {
           document.querySelector('#result').appendChild(document.createElement('a'));
           if (arrString.Company.includes(type)) {
@@ -202,8 +203,8 @@ function showResult(type, value, p) {
                 //   break;
                 default:
                   document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
-                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['사업부문명', '제품명'].includes(item.title) ? 'ellipsis-2' : 'ellipsis-1')
-                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').appendChild(document.createTextNode(eval('record.' + item.id)));
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['사업부문명', '제품명'].includes(item.title) ? 'ellipsis-0' : 'ellipsis-1');
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').appendChild(document.createTextNode(eval('record.' + item.id) === '' ? '-' : eval('record.' + item.id)));
               }
             });
             limit = 9;
@@ -245,6 +246,9 @@ function showResult(type, value, p) {
     })
     .catch(function (err) {
       console.log('Summary', 'catch', err);
+
+      document.querySelector('#result').appendChild(document.createElement('ul'));
+      document.querySelector('#result > ul').classList.add(err)
     });
 }
 
