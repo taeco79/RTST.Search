@@ -209,6 +209,8 @@ function showResult(type, value, p) {
             });
             limit = 9;
           } else if (arrString.Patent.includes(type)) {
+            var tmpMainIPCs = null;
+            var tmpMainIPC = null;
             document.querySelector('#result > a:last-child').classList.add('patent');
             document.querySelector('#result > a:last-child').setAttribute('target', '_blank');
             document.querySelector('#result > a:last-child').setAttribute('href', '/detail/patent/' + record.registerNumber);
@@ -219,12 +221,13 @@ function showResult(type, value, p) {
               document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
               document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').innerText = item.title;
               switch (item.id) {
-                // case 'registerNumber':
-                //   document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('a'));
-                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
-                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('href', '/detail/patent/' + record.registerNumber);
-                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').appendChild(document.createTextNode(eval('record.' + item.id)));
-                //   break;
+                case 'ipcNumber':
+                  tmpMainIPCs = eval('record.' + item.id)
+                  tmpMainIPC = tmpMainIPCs.match('(||)?[^|]+(||)');
+                  document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['요약문'].includes(item.title) ? 'ellipsis-2' : 'ellipsis-1')
+                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').appendChild(document.createTextNode(tmpMainIPC === null ? '-' : tmpMainIPC[0]));
+                  break;
                 default:
                   document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
                   document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['요약문'].includes(item.title) ? 'ellipsis-2' : 'ellipsis-1')
