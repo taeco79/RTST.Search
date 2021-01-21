@@ -195,4 +195,5 @@ input + label { cursor: pointer; }
 }
 
 .ellipsis-1 { display: inline-block; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ellipsis-0 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient:vertical; white-space:normal; overflow:hidden; text-overflow:ellipsis; line-height: 1.5em !important; height: 1.5em; }
 .ellipsis-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient:vertical; white-space:normal; overflow:hidden; text-overflow:ellipsis; line-height: 1.5em !important; height: 3em; }
