@@ -19,6 +19,7 @@
         <th>이메일(아이디)</th>
         <th>비밀번호</th>
         <th>이름</th>
+        <th>등급</th>
         <th>등록일시</th>
         <th>수정일시</th>
         <th>접속일시</th>
@@ -30,6 +31,11 @@
         <td><input type="password" name="password" placeholder="영문 대소문자, 숫자 특수문자를 포함한 8~20자 입력하세요."
             pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,20}$" required></td>
         <td><input type="text" name="name" pattern="^(?=.*[^\s]).{2,}$" placeholder="공백을 제외한 최소 2자이상 입력하세요." required>
+        </td>
+        <td>
+          <input type="radio" name="gradeNew" id="gradeNewNormal" value="1" checked><label
+            for="gradeNewNormal">일반</label>
+          <input type="radio" name="gradeNew" id="gradeNewManager" value="9"><label for="gradeNewManager">관리자</label>
         </td>
         <td>-</td>
         <td>-</td>

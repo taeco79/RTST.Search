@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post("/login", (req, res) => {
   var sql = '';
-  sql += 'SELECT `Member` AS `No`, `Key`, `Name`';
+  sql += 'SELECT `Member` AS `No`, `Key`, `Name`, `Grade`';
   sql += ' FROM`TB-Member`';
   sql += ' WHERE `id` = ?';
   sql += ' AND `Password` = SHA2(?, 256)';
@@ -68,6 +68,7 @@ app.post("/login", (req, res) => {
               res.cookie('id', req.body.id, { httpOnly: true, signed: true });
               res.cookie('key', rows[0].Key, { httpOnly: true, signed: true });
               res.cookie('name', MEMBER[0].Name);
+              res.cookie('grade', MEMBER[0].Grade);
               res.json({ error: 0, message: '성공', data: rows });
             }
           });
@@ -522,6 +523,8 @@ app.get("/news/:keyword/:limit/:page", (req, res) => {
 app.get("/management/:class", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
+      if (data !== 9) throw 'denied';
+
       fs.readFile('./public/htm/' + req.params.class + '.htm', 'utf8', function (err, HTML) {
         res.writeHead(200, {});
         res.end(HTML);
@@ -535,16 +538,19 @@ app.get("/management/:class", (req, res) => {
 app.post("/member", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
+      if (data !== 9) throw 'denied';
+
       var query = ''
       var param = [];
 
-      query = 'INSERT INTO `TB-Member`(`entry`, `key`, `ref`, `id`, `password`, `name`)';
+      query = 'INSERT INTO `TB-Member`(`entry`, `key`, `ref`, `id`, `password`, `name`, `grade`)';
       query += ' SELECT NOW() AS`entry`';
       query += ', UUID() AS`key`';
       query += ', `TB-Member`.`member` AS`ref`';
       query += ', ? AS`id`'; param.push(req.body.id);
       query += ', SHA2(?, 256) AS`password`'; param.push(req.body.password);
       query += ', ? AS`name`'; param.push(req.body.name);
+      query += ', ? AS`grade`'; param.push(req.body.grade);
       query += 'FROM`TB-Member`';
       query += 'INNER JOIN`TB-Session` ON`TB-Member`.`member` = `TB-Session`.`Member`';
       query += 'WHERE`TB-Member`.`id` = ?'; param.push(req.signedCookies.id);
@@ -562,9 +568,13 @@ app.post("/member", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
-      res.json({ error: 8, message: 'Session out.' });
+      if (err === 'redirect')
+        res.json({ error: 9, message: 'Permission denied.' });
+      else {
+        res.clearCookie('key');
+        res.clearCookie('name');
+        res.json({ error: 8, message: 'Session out.' });
+      }
     });
 });
 
@@ -586,6 +596,7 @@ app.get("/members/:page", (req, res) => {
           query = 'SELECT `TB-Member`.`key`';
           query += ', `TB-Member`.`id`';
           query += ', `TB-Member`.`name`';
+          query += ', `TB-Member`.`grade`';
           query += ', DATE_FORMAT(`TB-Member`.`entry`, \'%Y-%m-%d %H:%i:%s\') AS `entry`';
           query += ', DATE_FORMAT(`TB-Member`.`update`, \'%Y-%m-%d %H:%i:%s\') AS `update`';
           query += ', DATE_FORMAT(MAX(`TB-Session`.`Logined`), \'%Y-%m-%d %H:%i:%s\') AS`logined`';
@@ -620,6 +631,8 @@ app.get("/members/:page", (req, res) => {
 app.del("/members", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
+      if (data !== 9) throw 'denied';
+
       var query = '';
       var param = [];
       query = 'UPDATE `TB-Member`';
@@ -640,15 +653,21 @@ app.del("/members", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
-      res.json({ error: 8, message: 'Session out.' });
+      if (err === 'redirect')
+        res.json({ error: 9, message: 'Permission denied.' });
+      else {
+        res.clearCookie('key');
+        res.clearCookie('name');
+        res.json({ error: 8, message: 'Session out.' });
+      }
     });
 });
 
 app.del("/member/:id", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
+      if (data !== 9) throw 'denied';
+
       var query = '';
       var param = [];
       query = 'UPDATE `TB-Member`';
@@ -668,19 +687,26 @@ app.del("/member/:id", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
-      res.json({ error: 8, message: 'Session out.' });
+      if (err === 'redirect')
+        res.json({ error: 9, message: 'Permission denied.' });
+      else {
+        res.clearCookie('key');
+        res.clearCookie('name');
+        res.json({ error: 8, message: 'Session out.' });
+      }
     });
 });
 
 app.put("/member/:id", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
+      if (data !== 9) throw 'denied';
+
       var query = '';
       var param = [];
       query = 'UPDATE `TB-Member`';
       query += ' SET `name` = ?'; param.push(req.body.name);
+      query += ', `grade` = ?'; param.push(req.body.grade);
       if (req.body.password.replace(/\s/gim, '') !== '') {
         query += ', `password` = SHA2(?, 256)'; param.push(req.body.password);
       }
@@ -692,14 +718,18 @@ app.put("/member/:id", (req, res) => {
           res.json({ error: 9, message: err.message });
         } else {
           // console.log(RESULT);
-          res.json({ error: 0, message: 'Sucess', data: RESULT, info: { key: req.params.id, name: req.body.name } });
+          res.json({ error: 0, message: 'Sucess', data: RESULT, info: { key: req.params.id, name: req.body.name, grade: req.body.grade } });
         }
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
-      res.json({ error: 8, message: 'Session out.' });
+      if (err === 'redirect')
+        res.json({ error: 9, message: 'Permission denied.' });
+      else {
+        res.clearCookie('key');
+        res.clearCookie('name');
+        res.json({ error: 8, message: 'Session out.' });
+      }
     });
 });
 

@@ -23,13 +23,13 @@ function showMenu() {
       document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/');
       document.querySelector('.searchMini> div#menu > ul > li:last-child > a').appendChild(document.createTextNode('Home'));
     }
-    if (!location.pathname.match(/^\/management\/members/)) {
+    if (!location.pathname.match(/^\/management\/members/) && getCookie('grade') === '9') {
       document.querySelector('.searchMini> div#menu > ul').appendChild(document.createElement('li'));
       document.querySelector('.searchMini> div#menu > ul > li:last-child').appendChild(document.createElement('a'));
       document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/management/members');
       document.querySelector('.searchMini> div#menu > ul > li:last-child > a').appendChild(document.createTextNode('Members'));
     }
-    if (!location.pathname.match(/^\/management\/companys/)) {
+    if (!location.pathname.match(/^\/management\/companys/) && getCookie('grade') === '9') {
       document.querySelector('.searchMini> div#menu > ul').appendChild(document.createElement('li'));
       document.querySelector('.searchMini> div#menu > ul > li:last-child').appendChild(document.createElement('a'));
       document.querySelector('.searchMini> div#menu > ul > li:last-child > a').setAttribute('href', '/management/companys');

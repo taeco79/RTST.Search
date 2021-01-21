@@ -20,6 +20,7 @@ window.onload = function () {
           id: document.querySelector('input[name="id"]:valid').value
           , password: document.querySelector('input[name="password"]:valid').value
           , name: document.querySelector('input[name="name"]:valid').value
+          , grade: document.querySelector('input[name="gradeNew"]:checked').value
         })
       })
         .then(function (res) { return res.json(); })
@@ -141,6 +142,10 @@ function loadMembers(page) {
           document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.name;
 
           document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
+          document.querySelector('table > tbody > tr:last-child > td:last-child').setAttribute('data-original', item.grade);
+          document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.grade === 9 ? '관리자' : '일반';
+
+          document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
           document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.entry;
 
           document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
@@ -186,6 +191,10 @@ function changePage(page) {
 }
 
 function editMember(obj) {
+  if (document.querySelector('input[name="gradeEdit"]') !== null) {
+    alert('수정중인 항목을 먼저 완료하세요.');
+    return null;
+  }
   obj.parentElement.querySelector('button.save').disabled = false;
   obj.parentElement.querySelector('button.save').classList.remove('hide');
   obj.parentElement.querySelector('button.cancel').disabled = false;
@@ -209,6 +218,29 @@ function editMember(obj) {
   obj.parentElement.parentElement.querySelectorAll('td')[3].querySelector('input').setAttribute('value', obj.parentElement.parentElement.querySelectorAll('td')[3].getAttribute('data-original'));
   obj.parentElement.parentElement.querySelectorAll('td')[3].querySelector('input').setAttribute('placeholder', '공백을 제외한 최소 2자이상 입력하세요.');
   obj.parentElement.parentElement.querySelectorAll('td')[3].querySelector('input').setAttribute('required', true);
+
+  obj.parentElement.parentElement.querySelectorAll('td')[4].innerHTML = '';
+  obj.parentElement.parentElement.querySelectorAll('td')[4].appendChild(document.createElement('input'));
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('type', 'radio');
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('name', 'gradeEdit');
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('id', 'grade-normal-' + obj.parentElement.parentElement.querySelector('input[type="checkbox"]').value);
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('value', 1);
+  if (obj.parentElement.parentElement.querySelectorAll('td')[4].getAttribute('data-original') !== '9')
+    obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('checked', true);
+  obj.parentElement.parentElement.querySelectorAll('td')[4].appendChild(document.createElement('label'));
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('label:last-child').setAttribute('for', 'grade-normal-' + obj.parentElement.parentElement.querySelector('input[type="checkbox"]').value);
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('label:last-child').appendChild(document.createTextNode('일반'));
+  obj.parentElement.parentElement.querySelectorAll('td')[4].appendChild(document.createElement('input'));
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('type', 'radio');
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('name', 'gradeEdit');
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('id', 'grade-manager-' + obj.parentElement.parentElement.querySelector('input[type="checkbox"]').value);
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('value', 9);
+  if (obj.parentElement.parentElement.querySelectorAll('td')[4].getAttribute('data-original') === '9')
+    obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('input:last-child').setAttribute('checked', true);
+  obj.parentElement.parentElement.querySelectorAll('td')[4].appendChild(document.createElement('label'));
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('label:last-child').setAttribute('for', 'grade-manager-' + obj.parentElement.parentElement.querySelector('input[type="checkbox"]').value);
+  obj.parentElement.parentElement.querySelectorAll('td')[4].querySelector('label:last-child').appendChild(document.createTextNode('관리자'));
+
 }
 
 function cancelMember(obj) {
@@ -224,6 +256,7 @@ function cancelMember(obj) {
   obj.parentElement.parentElement.querySelectorAll('td')[2].innerHTML = '';
 
   obj.parentElement.parentElement.querySelectorAll('td')[3].innerText = obj.parentElement.parentElement.querySelectorAll('td')[3].getAttribute('data-original');
+  obj.parentElement.parentElement.querySelectorAll('td')[4].innerText = obj.parentElement.parentElement.querySelectorAll('td')[4].getAttribute('data-original') === '1' ? '일반' : '관리자';
 }
 
 function saveMember(obj) {
@@ -240,6 +273,7 @@ function saveMember(obj) {
       , body: JSON.stringify({
         password: obj.parentElement.parentElement.querySelector('input[name="password"]').value
         , name: obj.parentElement.parentElement.querySelector('input[name="name"]').value
+        , grade: obj.parentElement.parentElement.querySelector('input[name="gradeEdit"]:checked').value
       })
     })
       .then(function (res) { return res.json(); })
@@ -249,6 +283,8 @@ function saveMember(obj) {
             document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement.parentElement.querySelectorAll('td')[2].innerText = '';
             document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement.parentElement.querySelectorAll('td')[3].setAttribute('data-original', json.info.name);
             document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement.parentElement.querySelectorAll('td')[3].innerText = json.info.name;
+            document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement.parentElement.querySelectorAll('td')[4].setAttribute('data-original', json.info.grade);
+            document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement.parentElement.querySelectorAll('td')[4].innerText = json.info.grade === '9' ? '관리자' : '일반';
 
             cancelMember(document.querySelector('input[type="checkbox"][value="' + json.info.key + '"]').parentElement);
           }

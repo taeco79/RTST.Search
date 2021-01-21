@@ -45,28 +45,28 @@ module.exports = {
       else if (typeof req.signedCookies.key === 'undefined') reject(Error('Session(key) none.'));
       else {
         sql = '';
-        sql += 'SELECT `TB-Session`.`Session` AS `No`';
+        sql += 'SELECT `TB-Session`.`Session` AS `No`, `TB-Member`.`grade` AS `Grade`';
         sql += ' FROM`TB-Session`';
         sql += ' INNER JOIN`TB-Member` ON`TB-Session`.`Member` = `TB-Member`.`Member`';
         sql += ' WHERE`TB-Session`.`Expired` > NOW()';
         sql += ' AND`TB-Member`.`id` = ?';
         sql += ' AND`TB-Session`.`key` = ?;';
-        dbConn.query(sql, [req.signedCookies.id, req.signedCookies.key], (err, SESION) => {
-          // console.log('RESULT', SESION);
+        dbConn.query(sql, [req.signedCookies.id, req.signedCookies.key], (err, SESSION) => {
+          // console.log('RESULT', SESSION);
           if (err) {
             console.log('logined', err);
             reject(Error('Session expired.'));
-          } else if (SESION.length !== 1) {
+          } else if (SESSION.length !== 1) {
             console.log('Session #2');
             reject(Error('Session none.'));
           } else {
-            dbConn.query('UPDATE `TB-Session` SET `Expired` = DATE_ADD(NOW(), INTERVAL 20 MINUTE) WHERE `Session` = ?', [SESION[0].No], (err, result) => {
+            dbConn.query('UPDATE `TB-Session` SET `Expired` = DATE_ADD(NOW(), INTERVAL 20 MINUTE) WHERE `Session` = ?', [SESSION[0].No], (err, result) => {
               // console.log('RESULT', result);
               if (err) {
                 console.log('logined', err);
                 reject(Error('Session expired.'));
               } else {
-                resolve(true);
+                resolve(SESSION[0].Grade);
               }
             });
           }
@@ -87,12 +87,12 @@ module.exports = {
   //     sql += ' WHERE`TB-Session`.`Expired` > NOW()';
   //     sql += ' AND`TB-Member`.`id` <> ?';
   //     sql += ' AND`TB-Session`.`key` = ?;';
-  //     await dbConn.query(sql, [req.signedCookies.id, req.signedCookies.key], (err, SESION) => {
+  //     await dbConn.query(sql, [req.signedCookies.id, req.signedCookies.key], (err, SESSION) => {
   //       console.log('Session #1');
   //       if (err) {
   //         console.log('logined', err);
   //         return callback(false);
-  //       } else if (SESION.length !== 1) {
+  //       } else if (SESSION.length !== 1) {
   //         console.log('Session #2');
   //         return callback(false);
   //       } else {
