@@ -64,6 +64,9 @@ input + label { cursor: pointer; }
   font-size: 1.0625rem;
   line-height: 3.5rem;
   letter-spacing: -0.04em;
+  color: #333333;
+}
+.search > div > input::placeholder {
   color: #AAAAAA;
 }
 .search > div > button {

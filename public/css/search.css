@@ -30,9 +30,12 @@ li { list-style: none; }
   font-weight: normal;
   font-size: 1rem;
   letter-spacing: -0.04em;
-  color: #555555;
+  color: #333333;
   line-height: 2.25rem;
   padding-left: 1.25rem;
+}
+.searchMini > input::placeholder {
+  color: #AAAAAA;
 }
 .searchMini > button {
   position: relative;
