@@ -44,14 +44,13 @@ app.post("/login", (req, res) => {
     } else if (MEMBER.length === 0)
       res.json({ error: 1, message: '아이디 또는 비밀번호가 일치하지 않습니다.' });
     else {
-      // console.log('MEMBER', MEMBER);
+      // 기존 로그인 세션 초기화.
       sql = '';
-      sql += 'INSERT INTO `TB-Session`';
-      sql += ' SET `Expired` = DATE_ADD(NOW(), INTERVAL 20 MINUTE)';
+      sql += 'UPDATE `TB-Session`';
+      sql += ' SET `Expired` = NOW()';
       sql += ', `Member` = ?';
-      sql += ', `Key` = UUID()';
-      sql += ', `IP` = ?';
-      db_conn.query(sql, [MEMBER[0].No, '0.0.0.0'], (err, SESSION) => {
+      sql += ' WHERE `Expired` > NOW()';
+      db_conn.query(sql, [MEMBER[0].No], (err, EXPIRED) => {
         if (err) {
           // console.log(err);
           if (err.message.match(/^ER\_NO\_SUCH\_TABLE: Table.+doesn't exist$/)) {
@@ -60,16 +59,34 @@ app.post("/login", (req, res) => {
             res.json({ error: 9, message: '시스템 오류(DB::Session::Unknown)가 발생했습니다.' })
           }
         } else {
-          db_conn.query('SELECT `Key` FROM `TB-Session` WHERE `Session` = ?', SESSION.insertId, (err, rows) => {
-            if (err)
-              res.json({ error: 9, message: '시스템 오류(DB::Session::Unknown)가 발생했습니다.' })
-            else {
-              // console.log('Session', rows);
-              res.cookie('id', req.body.id, { httpOnly: true, signed: true });
-              res.cookie('key', rows[0].Key, { httpOnly: true, signed: true });
-              res.cookie('name', MEMBER[0].Name);
-              res.cookie('grade', MEMBER[0].Grade);
-              res.json({ error: 0, message: '성공', data: rows });
+          // console.log('MEMBER', MEMBER);
+          sql = '';
+          sql += 'INSERT INTO `TB-Session`';
+          sql += ' SET `Expired` = DATE_ADD(NOW(), INTERVAL 20 MINUTE)';
+          sql += ', `Member` = ?';
+          sql += ', `Key` = UUID()';
+          sql += ', `IP` = ?';
+          db_conn.query(sql, [MEMBER[0].No, '0.0.0.0'], (err, SESSION) => {
+            if (err) {
+              // console.log(err);
+              if (err.message.match(/^ER\_NO\_SUCH\_TABLE: Table.+doesn't exist$/)) {
+                fn.TB_Session(db_conn, res)
+              } else {
+                res.json({ error: 9, message: '시스템 오류(DB::Session::Unknown)가 발생했습니다.' })
+              }
+            } else {
+              db_conn.query('SELECT `Key` FROM `TB-Session` WHERE `Session` = ?', SESSION.insertId, (err, rows) => {
+                if (err)
+                  res.json({ error: 9, message: '시스템 오류(DB::Session::Unknown)가 발생했습니다.' })
+                else {
+                  // console.log('Session', rows);
+                  res.cookie('id', req.body.id, { httpOnly: true, signed: true });
+                  res.cookie('key', rows[0].Key, { httpOnly: true, signed: true });
+                  res.cookie('name', MEMBER[0].Name);
+                  res.cookie('grade', MEMBER[0].Grade);
+                  res.json({ error: 0, message: '성공', data: rows });
+                }
+              });
             }
           });
         }
