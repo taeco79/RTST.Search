@@ -15,13 +15,115 @@ var mime = {
 };
 
 module.exports = {
-  // search: function (dbConn, req, page) {
-  //   return new Promise((resolve, reject) = {
+  getMembers: function (dbConn, req, res, PAGE, KEYWORD) {
+    var query = '';
+    var param = [];
+    query = 'SELECT COUNT(*) AS `Count`';
+    query += ' FROM`TB-Member`';
+    query += ' WHERE `TB-Member`.`member` <> 1';
+    query += ' AND `TB-Member`.`isDeleted` = 0';
+    if (KEYWORD !== null) {
+      query += ' AND (`TB-Member`.`id` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
+      query += ' OR `TB-Member`.`name` LIKE CONCAT(\'%\', ?, \'%\'))'; param.push(KEYWORD);
+    }
+    dbConn.query(query, param, (err, COUNT) => {
+      if (err) {
+        res.json({ error: 9, message: err.message });
+      } else {
+        var query = '';
+        var param = [];
+        query = 'SELECT `TB-Member`.`key`';
+        query += ', `TB-Member`.`id`';
+        query += ', `TB-Member`.`name`';
+        query += ', `TB-Member`.`grade`';
+        query += ', DATE_FORMAT(`TB-Member`.`entry`, \'%Y-%m-%d %H:%i:%s\') AS `entry`';
+        query += ', DATE_FORMAT(`TB-Member`.`update`, \'%Y-%m-%d %H:%i:%s\') AS `update`';
+        query += ', DATE_FORMAT(MAX(`TB-Session`.`Logined`), \'%Y-%m-%d %H:%i:%s\') AS`logined`';
+        query += ' FROM`TB-Member`';
+        query += ' LEFT OUTER JOIN`TB-Session` ON`TB-Member`.`member` = `TB-Session`.`member`';
+        query += ' WHERE `TB-Member`.`member` <> 1';
+        query += ' AND `TB-Member`.`isDeleted` = 0';
+        if (KEYWORD !== null) {
+          query += ' AND (`TB-Member`.`id` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
+          query += ' OR `TB-Member`.`name` LIKE CONCAT(\'%\', ?, \'%\'))'; param.push(KEYWORD);
+        }
+        query += ' GROUP BY `TB-Member`.`key`';
+        query += ', `TB-Member`.`id`';
+        query += ', `TB-Member`.`name`';
+        query += ', `TB-Member`.`entry`';
+        query += ', `TB-Member`.`update`';
+        query += ' LIMIT ?, 10;'; param.push((parseInt(PAGE) - 1) * 10);
+        dbConn.query(query, param, (err, RESULT) => {
+          if (err) {
+            res.json({ error: 9, message: err.message });
+          } else {
+            // console.log(RESULT);
+            res.json({ error: 0, message: 'Sucess', total: COUNT[0].Count, page: parseInt(PAGE), data: RESULT });
+          }
+        });
+      }
+    });
 
-  //   });
-  // }
-  // ,
-  loadFile: function (req, res) {
+  }
+  , getCompanys: function (dbConn, req, res, PAGE, KEYWORD) {
+    var query = '';
+    var param = [];
+    query = 'SELECT COUNT(*) AS `Count`';
+    query += ' FROM `TB-Company`';
+    query += ' WHERE `TB-Company`.`isDeleted` = 0';
+    if (KEYWORD !== null) {
+      query += ' AND (`TB-Company`.`keyCompany` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
+      query += ' OR `TB-Company`.`registerNumber` LIKE CONCAT(\'%\', ?, \'%\'))'; param.push(KEYWORD);
+    }
+    // console.log(query);
+    dbConn.query(query, param, (err, COUNT) => {
+      if (err) {
+        res.json({ error: 99, message: err.message });
+      } else {
+        var query = '';
+        var param = [];
+        query = 'SELECT `key` AS `company`';
+        query += ', `keyCompany`';
+        query += ', `registerNumber`';
+        query += ', `name`';
+        query += ', `representative`';
+        // query += ', `address`';
+        // query += ', `tel`';
+        // query += ', `fax`';
+        // query += ', `homepage`';
+        // query += ', `email`';
+        // query += ', `businessTypes`';
+        // query += ', `businessItems`';
+        // query += ', DATE_FORMAT(`businessRegisted`, \'%Y-%m-%d\') AS`businessRegisted`';
+        // query += ', `numberOfEmployees`';
+        // query += ', DATE_FORMAT(`dateByEmployeeCount`, \'%Y-%m-%d\') AS`dateByEmployeeCount`';
+        // query += ', `isKOSDAQ`';
+        // query += ', `isINNOBIZ`';
+        // query += ', `isHidenChampion`';
+        // query += ', `isVenture`';
+        // query += ', `nice`';
+        // query += ', `ked`';
+        query += ' FROM `TB-Company`';
+        query += ' WHERE `TB-Company`.`isDeleted` = 0';
+        if (KEYWORD !== null) {
+          query += ' AND (`TB-Company`.`keyCompany` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
+          query += ' OR `TB-Company`.`registerNumber` LIKE CONCAT(\'%\', ?, \'%\'))'; param.push(KEYWORD);
+        }
+        // console.log(query);
+        query += ' LIMIT ?, 10;'; param.push((parseInt(PAGE) - 1) * 10);
+        dbConn.query(query, param, (err, RESULT) => {
+          if (err) {
+            res.json({ error: 9, message: err.message });
+          } else {
+            // console.log(RESULT);
+            res.json({ error: 0, message: 'Sucess', total: COUNT[0].Count, page: parseInt(PAGE), data: RESULT });
+          }
+        });
+      }
+    });
+
+  }
+  , loadFile: function (req, res) {
     var file = path.join(dir, req.path.replace(/\/$/, '/index.html'));
     if (file.indexOf(dir + path.sep) !== 0) {
       return res.status(403).end('Forbidden');

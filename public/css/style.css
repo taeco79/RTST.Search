@@ -106,6 +106,7 @@ input + label { cursor: pointer; }
   right: 1.875rem;
   width: 6rem;
   z-index: 999;
+  display: inline-table;
 }
 #menu > a {
   position: relative;
@@ -200,3 +201,23 @@ input + label { cursor: pointer; }
 .ellipsis-1 { display: inline-block; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ellipsis-0 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient:vertical; white-space:normal; overflow:hidden; text-overflow:ellipsis; line-height: 1.5em !important; height: 1.5em; }
 .ellipsis-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient:vertical; white-space:normal; overflow:hidden; text-overflow:ellipsis; line-height: 1.5em !important; height: 3em; }
+
+#keywordForm { text-align: right; margin-bottom: 1rem; }
+#keywordForm > input {
+  height: 1.75rem;
+  background: #FFFFFF;
+  border: 1px solid #DDDDDD;
+  box-sizing: border-box;
+  box-shadow: inset 0px 1px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 0.75rem;
+  line-height: 1.75rem;
+  letter-spacing: -0.04em;
+  color: #333333;
+  margin-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+#keywordForm > input::placeholder { color: #AAAAAA; }

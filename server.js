@@ -598,45 +598,19 @@ app.post("/member", (req, res) => {
 app.get("/members/:page", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
-      var query = '';
-      var param = [];
-      query = 'SELECT COUNT(*) AS `Count`';
-      query += ' FROM`TB-Member`';
-      query += ' WHERE `TB-Member`.`member` <> 1';
-      query += ' AND `TB-Member`.`isDeleted` = 0';
-      db_conn.query(query, param, (err, COUNT) => {
-        if (err) {
-          res.json({ error: 9, message: err.message });
-        } else {
-          var query = '';
-          var param = [];
-          query = 'SELECT `TB-Member`.`key`';
-          query += ', `TB-Member`.`id`';
-          query += ', `TB-Member`.`name`';
-          query += ', `TB-Member`.`grade`';
-          query += ', DATE_FORMAT(`TB-Member`.`entry`, \'%Y-%m-%d %H:%i:%s\') AS `entry`';
-          query += ', DATE_FORMAT(`TB-Member`.`update`, \'%Y-%m-%d %H:%i:%s\') AS `update`';
-          query += ', DATE_FORMAT(MAX(`TB-Session`.`Logined`), \'%Y-%m-%d %H:%i:%s\') AS`logined`';
-          query += ' FROM`TB-Member`';
-          query += ' LEFT OUTER JOIN`TB-Session` ON`TB-Member`.`member` = `TB-Session`.`member`';
-          query += ' WHERE `TB-Member`.`member` <> 1';
-          query += ' AND `TB-Member`.`isDeleted` = 0';
-          query += ' GROUP BY `TB-Member`.`key`';
-          query += ', `TB-Member`.`id`';
-          query += ', `TB-Member`.`name`';
-          query += ', `TB-Member`.`entry`';
-          query += ', `TB-Member`.`update`';
-          query += ' LIMIT ?, 10;'; param.push((parseInt(req.params.page) - 1) * 10);
-          db_conn.query(query, param, (err, RESULT) => {
-            if (err) {
-              res.json({ error: 9, message: err.message });
-            } else {
-              // console.log(RESULT);
-              res.json({ error: 0, message: 'Sucess', total: COUNT[0].Count, page: parseInt(req.params.page), data: RESULT });
-            }
-          });
-        }
-      });
+      fn.getMembers(db_conn, req, res, req.params.page, null);
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
+app.get("/members/:page/:keyword", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      fn.getMembers(db_conn, req, res, req.params.page, req.params.keyword);
     })
     .catch((err) => {
       res.clearCookie('key');
@@ -753,53 +727,19 @@ app.put("/member/:id", (req, res) => {
 app.get("/companys/:page", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
-      var query = '';
-      var param = [];
-      query = 'SELECT COUNT(*) AS `Count`';
-      query += ' FROM `TB-Company`';
-      query += ' WHERE `TB-Company`.`isDeleted` = 0';
-      // console.log(query);
-      db_conn.query(query, param, (err, COUNT) => {
-        if (err) {
-          res.json({ error: 99, message: err.message });
-        } else {
-          var query = '';
-          var param = [];
-          query = 'SELECT `key` AS `company`';
-          query += ', `keyCompany`';
-          query += ', `registerNumber`';
-          query += ', `name`';
-          query += ', `representative`';
-          // query += ', `address`';
-          // query += ', `tel`';
-          // query += ', `fax`';
-          // query += ', `homepage`';
-          // query += ', `email`';
-          // query += ', `businessTypes`';
-          // query += ', `businessItems`';
-          // query += ', DATE_FORMAT(`businessRegisted`, \'%Y-%m-%d\') AS`businessRegisted`';
-          // query += ', `numberOfEmployees`';
-          // query += ', DATE_FORMAT(`dateByEmployeeCount`, \'%Y-%m-%d\') AS`dateByEmployeeCount`';
-          // query += ', `isKOSDAQ`';
-          // query += ', `isINNOBIZ`';
-          // query += ', `isHidenChampion`';
-          // query += ', `isVenture`';
-          // query += ', `nice`';
-          // query += ', `ked`';
-          query += ' FROM `TB-Company`';
-          query += ' WHERE `TB-Company`.`isDeleted` = 0';
-          // console.log(query);
-          query += ' LIMIT ?, 10;'; param.push((parseInt(req.params.page) - 1) * 10);
-          db_conn.query(query, param, (err, RESULT) => {
-            if (err) {
-              res.json({ error: 9, message: err.message });
-            } else {
-              // console.log(RESULT);
-              res.json({ error: 0, message: 'Sucess', total: COUNT[0].Count, page: parseInt(req.params.page), data: RESULT });
-            }
-          });
-        }
-      });
+      fn.getCompanys(db_conn, req, res, req.params.page, null);
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
+app.get("/companys/:page/:keyword", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      fn.getCompanys(db_conn, req, res, req.params.page, req.params.keyword);
     })
     .catch((err) => {
       res.clearCookie('key');
@@ -844,6 +784,117 @@ app.get("/company/:id", (req, res) => {
         } else {
           // console.log(RESULT);
           res.json({ error: 0, message: 'Sucess', data: RESULT });
+        }
+      });
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
+app.get("/companyAll/:id", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      var query = '';
+      var param = [];
+      query = 'SELECT `TB-Company`.`key` AS `company`';
+      query += ', `TB-Company`.`name`';
+      query += ', `TB-Company`.`registerNumber`';
+      query += ', `TB-Company`.`representative`';
+      query += ', `TB-Company`.`address`';
+      query += ', `TB-Company`.`tel`';
+      query += ', `TB-Company`.`fax`';
+      query += ', `TB-Company`.`homepage`';
+      query += ', `TB-Company`.`email`';
+      query += ', `TB-Company`.`businessTypes`';
+      query += ', `TB-Company`.`businessItems`';
+      query += ', DATE_FORMAT(`TB-Company`.`businessRegisted`, \'%Y-%m-%d\') AS`businessRegisted`';
+      query += ', `TB-Company`.`numberOfEmployees`';
+      query += ', DATE_FORMAT(`TB-Company`.`dateByEmployeeCount`, \'%Y-%m-%d\') AS`dateByEmployeeCount`';
+      query += ', `TB-Company`.`isKOSDAQ`';
+      query += ', `TB-Company`.`isINNOBIZ`';
+      query += ', `TB-Company`.`isHidenChampion`';
+      query += ', `TB-Company`.`isVenture`';
+      query += ', `TB-Company`.`nice`';
+      query += ', `TB-Company`.`ked`';
+      query += ', `TB-Company`.`keyCompany`';
+      query += ', `TB-CompanyDemand`.`demandingTechnology`';
+      query += ', `TB-CompanyDemand`.`introductoryIntention`';
+      query += ', `TB-CompanyDemand`.`technologyTransfer`';
+      query += ', `TB-CompanyDemand`.`technologyTransferDepartment`';
+      query += ', `TB-CompanyDemand`.`technologyTransferOfficer`';
+      query += ', `TB-CompanyDemand`.`technologyTransferTel`';
+      query += ' FROM `TB-Company`';
+      query += ' LEFT OUTER JOIN `TB-CompanyDemand` ON `TB-Company`.`company` = `TB-CompanyDemand`.`company`';
+      query += ' WHERE `TB-Company`.`isDeleted` = 0';
+      query += ' AND `TB-Company`.`key` = ?'; param.push(req.params.id);
+      // console.log(query);
+      db_conn.query(query, param, (err, RESULT) => {
+        if (err) {
+          res.json({ error: 9, message: err.message });
+        } else {
+          // console.log(RESULT);
+          res.json({ error: 0, message: 'Sucess', data: RESULT });
+        }
+      });
+    })
+    .catch((err) => {
+      res.clearCookie('key');
+      res.clearCookie('name');
+      res.json({ error: 8, message: 'Session out.' });
+    });
+});
+
+app.put("/companyAll/:id", (req, res) => {
+  fn.logined(db_conn, req)
+    .then((data) => {
+      var query = '';
+      var param = [];
+      query = ' UPDATE `TB-Company`';
+      query += ' SET `TB-Company`.`isKOSDAQ` = ?'; param.push(req.body.isKOSDAQ);
+      query += ', `TB-Company`.`isINNOBIZ` = ?'; param.push(req.body.isINNOBIZ);
+      query += ', `TB-Company`.`isHidenChampion` = ?'; param.push(req.body.isHidenChampion);
+      query += ', `TB-Company`.`isVenture` = ?'; param.push(req.body.isVenture);
+      query += ' WHERE `TB-Company`.`isDeleted` = 0';
+      query += ' AND `TB-Company`.`key` = ?'; param.push(req.params.id);
+      // console.log(query);
+      db_conn.query(query, param, (err, RESULT) => {
+        if (err) {
+          res.json({ error: 9, message: err.message });
+        } else {
+          var query = '';
+          var param = [];
+          query = 'INSERT INTO `TB-CompanyDemand` (`company`, `companyName`, `registerNumber`, `keyCompany`, `demandingTechnology`, `introductoryIntention`, `technologyTransfer`, `technologyTransferDepartment`, `technologyTransferOfficer`, `technologyTransferTel`)';
+          query += ' SELECT `company`';
+          query += ', `name` AS`companyName`';
+          query += ', `registerNumber`';
+          query += ', `keyCompany`';
+          query += ', ? AS`demandingTechnology`'; param.push(req.body.demandingTechnology);
+          query += ', ? AS`introductoryIntention`'; param.push(req.body.introductoryIntention);
+          query += ', ? AS`technologyTransfer`'; param.push(req.body.technologyTransfer);
+          query += ', ? AS`technologyTransferDepartment`'; param.push(req.body.technologyTransferDepartment);
+          query += ', ? AS`technologyTransferOfficer`'; param.push(req.body.technologyTransferOfficer);
+          query += ', ? AS`technologyTransferTel`'; param.push(req.body.technologyTransferTel);
+          query += ' FROM`TB-Company`';
+          query += ' WHERE`isDeleted` = 0';
+          query += ' AND`key` = ?'; param.push(req.params.id);
+          query += ' ON DUPLICATE KEY UPDATE `demandingTechnology` = ?'; param.push(req.body.demandingTechnology);
+          query += ', `introductoryIntention` = ?'; param.push(req.body.introductoryIntention);
+          query += ', `technologyTransfer` = ?'; param.push(req.body.technologyTransfer);
+          query += ', `technologyTransferDepartment` = ?'; param.push(req.body.technologyTransferDepartment);
+          query += ', `technologyTransferOfficer` = ?'; param.push(req.body.technologyTransferOfficer);
+          query += ', `technologyTransferTel` = ?'; param.push(req.body.technologyTransferTel);
+          // console.log(query);
+          db_conn.query(query, param, (err, RESULT) => {
+            if (err) {
+              res.json({ error: 9, message: err.message });
+            } else {
+              // console.log(RESULT);
+              res.json({ error: 0, message: 'Sucess', data: RESULT });
+            }
+          });
         }
       });
     })

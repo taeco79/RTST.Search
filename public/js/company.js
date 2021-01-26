@@ -4,6 +4,15 @@ window.onload = function () {
   showMenu();
   loadCompanys(1);
 
+  document.querySelector('input[name="keyword"]').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter')
+      loadCompanys(1);
+  });
+
+  document.querySelector('#btnSearch').addEventListener('click', function () {
+    loadCompanys(1);
+  });
+
   document.querySelector('button#btnNew').addEventListener('click', function (e) {
     try {
       console.log('gg');
@@ -60,6 +69,7 @@ window.onload = function () {
       document.querySelector('input[name="' + err + '"]').focus();
     }
   });
+
   document.querySelectorAll('.detail > .tabs > input').forEach(function (el) {
     el.addEventListener('change', function (e) {
       if (e.target.value === 'info') getCompany();
@@ -124,7 +134,10 @@ function loadCompanys(page) {
   document.querySelector('table > tbody').appendChild(document.createElement('tr'));
   document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
   document.querySelector('table > tbody > tr:last-child > td').setAttribute('colspan', document.querySelectorAll('table > thead > tr:first-child > th').length);
-  fetch('/companys/' + page)
+  var url = '/companys/' + page;
+  if (document.querySelector('input[name="keyword"]').value !== '')
+    url += '/' + encodeURI(document.querySelector('input[name="keyword"]').value)
+  fetch(url)
     .then(function (res) { return res.json(); })
     .then(function (json) {
       try {
@@ -166,14 +179,17 @@ function loadCompanys(page) {
           document.querySelector('table > tbody > tr:last-child > td:last-child > button:last-child').addEventListener('click', function (e) { delCompany(e.target); });
 
           document.querySelector('table > tbody > tr:last-child').addEventListener('click', function (e) {
-            if (e.target.tagName === 'TD')
+            if (e.target.tagName === 'TD') {
+              while (document.querySelectorAll('tr.selected').length)
+                document.querySelector('tr.selected').classList.remove('selected');
+
+              e.target.parentElement.classList.add('selected');
               e.target.parentElement.querySelector('input').click();
+            }
           });
         });
         document.querySelectorAll('table > tbody input[type="radio"]').forEach(function (el) {
           el.addEventListener('change', function (e) {
-            document.querySelector('.detail > .tabs > input#companyInfo').checked = true;
-
             getCompany();
           });
         });
@@ -290,14 +306,60 @@ function getCompany() {
       return res.text();
     })
     .then(function (html) {
-      document.querySelector('.detail > .content').innerHTML = '<table><tbody><tr><td colspan="4"></th></tr></tbody></table>';
-      fetch('/company/' + document.querySelector('input[name="company"]:checked').value)
+      document.querySelector('.area:last-child').innerHTML = '';
+      fetch('/companyAll/' + document.querySelector('input[name="company"]:checked').value)
         .then(function (res) { return res.json(); })
         .then(function (json) {
-          for (const [field, value] of Object.entries(json.data[0])) {
-            html = html.replace('##' + field + '##', value === null ? '-' : value);
-          }
-          document.querySelector('.detail > .content').innerHTML = html;
+          for (const [field, value] of Object.entries(json.data[0]))
+            if (['dateByEmployeeCount', 'demandingTechnology', 'technologyTransferOfficer', 'technologyTransferTel'].includes(field))
+              html = html.replace('##' + field + '##', value === null ? '' : value);
+            else if (['isKOSDAQ', 'isINNOBIZ', 'isHidenChampion', 'isVenture'].includes(field))
+              html = html.replace('##' + field + '##', value === 'Y' ? ' checked' : '');
+            else if (['introductoryIntention', 'technologyTransfer', 'technologyTransferDepartment'].includes(field)) {
+              if (value === 'Y') {
+                html = html.replace('##' + field + '-Y##', ' checked');
+                html = html.replace('##' + field + '-N##', '');
+              } else {
+                html = html.replace('##' + field + '-Y##', '');
+                html = html.replace('##' + field + '-N##', ' checked');
+              }
+            } else
+              html = html.replace('##' + field + '##', value === null ? '-' : value);
+
+          document.querySelector('.area:last-child').innerHTML = html;
+
+          document.querySelector('#btnSave').addEventListener('click', function (e) {
+
+            fetch('/companyAll/' + document.querySelector('input[name="company"]:checked').value, {
+              method: 'PUT'
+              , headers: {
+                'Content-Type': 'application/json'
+              }
+              , body: JSON.stringify({
+                isKOSDAQ: document.querySelector('input[name="isKOSDAQ"]').checked ? 'Y' : 'N'
+                , isINNOBIZ: document.querySelector('input[name="isINNOBIZ"]').checked ? 'Y' : 'N'
+                , isHidenChampion: document.querySelector('input[name="isHidenChampion"]').checked ? 'Y' : 'N'
+                , isVenture: document.querySelector('input[name="isVenture"]').checked ? 'Y' : 'N'
+                , demandingTechnology: document.querySelector('input[name="demandingTechnology"]').value
+                , introductoryIntention: document.querySelector('input[name="introductoryIntention"]:checked').value
+                , technologyTransfer: document.querySelector('input[name="technologyTransfer"]:checked').value
+                , technologyTransferDepartment: document.querySelector('input[name="technologyTransferDepartment"]:checked').value
+                , technologyTransferOfficer: document.querySelector('input[name="technologyTransferOfficer"]').value
+                , technologyTransferTel: document.querySelector('input[name="technologyTransferTel"]').value
+              })
+            })
+              .then(function (res) { return res.json(); })
+              .then(function (json) {
+                if (checkError(json)) {
+                  getCompany();
+                } else {
+                  alert(json.message);
+                }
+              })
+              .catch(err => {
+                console.log('Member :: New', 'catch', err);
+              });
+          });
         })
         .catch(function (err) { console.log(err) });
     })

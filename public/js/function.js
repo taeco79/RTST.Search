@@ -58,13 +58,14 @@ function optionalMessage(idx) {
 
 
 function showPaging(total, page, limit) {
+  if (page < 1) page = 1;
   if (typeof (limit) !== 'undefined')
     LIMIT = limit;
   while (document.querySelectorAll('#paging > *').length)
     document.querySelector('#paging > *').remove();
 
   var pages = parseInt(total / LIMIT) + (total % LIMIT === 0 ? 0 : 1);
-  var start = (parseInt(page / 10) * 10) + 1
+  var start = (parseInt((page - 1) / 10) * 10) + 1
   var end = start + 9 > pages ? pages : start + 9;
   console.log(total, page, pages, LIMIT);
 

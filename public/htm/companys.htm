@@ -12,15 +12,25 @@
 </head>
 
 <body>
-  <table>
-    <thead>
-      <tr>
-        <th>선택</th>
-        <th>기업코드</th>
-        <th>사업자등록번호</th>
-        <th>기업명</th>
-        <th>대표자명</th>
-        <!--
+  <div id="frame">
+    <div class="searchMini">
+      <h1>관리</h1>
+    </div>
+    <h2>기업</h2>
+    <div class="area">
+      <div id="keywordForm">
+        <input type="text" name="keyword" placeholder="사업자번호, 기업코드">
+        <button id="btnSearch">검색</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>선택</th>
+            <th>기업코드</th>
+            <th>사업자등록번호</th>
+            <th>기업명</th>
+            <th>대표자명</th>
+            <!--
         <th>설립일자</th>
         <th>종업원수</th>
         <th>종업원수기준일자</th>
@@ -38,14 +48,15 @@
         <th>NICE업체코드</th>
         <th>KED업체코드</th>
         -->
-      </tr>
-      <tr>
-        <td>-</td>
-        <td><input type="text" name="key" placeholder="기업코드" required></td>
-        <td><input type="text" name="registerNumber" placeholder="사업자등록번호" pattern="\d{3}-?\d{2}-?\d{5}" required></td>
-        <td><input type="text" name="name" placeholder="기업명" required></td>
-        <td><input type="text" name="representative" placeholder="대표자명" required></td>
-        <!--
+          </tr>
+          <tr>
+            <td>-</td>
+            <td><input type="text" name="key" placeholder="기업코드" required></td>
+            <td><input type="text" name="registerNumber" placeholder="사업자등록번호" pattern="\d{3}-?\d{2}-?\d{5}" required>
+            </td>
+            <td><input type="text" name="name" placeholder="기업명" required></td>
+            <td><input type="text" name="representative" placeholder="대표자명" required></td>
+            <!--
         <td><input type="date" name="businessRegisted" placeholder="설립일자"></td>
         <td><input type="text" name="numberOfEmployees" placeholder="종업원수"></td>
         <td><input type="date" name="dateByEmployeeCount" placeholder="종업원수기준일자"></td>
@@ -63,24 +74,18 @@
         <td><input type="text" name="nice" placeholder="NICE업체코드"></td>
         <td><input type="text" name="ked" placeholder="KED업체코드"></td> 
         -->
-        <td><button id="btnNew">신규</button></td>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td colspan="8"></td>
-      </tr>
-    </tbody>
-  </table>
-  <ul id="paging"></ul>
-  <hr>
-  <div class="detail">
-    <div class="tabs">
-      <input type="radio" name="tab" value="info" id="companyInfo" checked><label for="companyInfo">기본정보</label>
-      <input type="radio" name="tab" value="demand" id="companyDemand"><label for="companyDemand">수요정보</label>
-      <input type="radio" name="tab" value="finance" id="companyFinance"><label for="companyFinance">회계정보</label>
+            <td><button id="btnNew">신규</button></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="8"></td>
+          </tr>
+        </tbody>
+      </table>
+      <ul id="paging"></ul>
     </div>
-    <div class="content"></div>
+    <div class="area"></div>
   </div>
 </body>
 

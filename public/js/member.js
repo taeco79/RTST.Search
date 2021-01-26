@@ -4,6 +4,15 @@ window.onload = function () {
   showMenu();
   loadMembers(1);
 
+  document.querySelector('input[name="keyword"]').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter')
+      loadMembers(1);
+  });
+
+  document.querySelector('#btnSearch').addEventListener('click', function (e) {
+    loadMembers(1);
+  });
+
   document.querySelector('button#btnNew').addEventListener('click', function (e) {
     try {
       ['id', 'password', 'name'].forEach(name => {
@@ -111,7 +120,11 @@ function loadMembers(page) {
   document.querySelector('table > tbody').appendChild(document.createElement('tr'));
   document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
   document.querySelector('table > tbody > tr:last-child > td').setAttribute('colspan', document.querySelectorAll('table > thead > tr:first-child > th').length);
-  fetch('/members/' + page)
+
+  var url = '/members/' + page;
+  if (document.querySelector('input[name="keyword"]').value !== '')
+    url += '/' + encodeURI(document.querySelector('input[name="keyword"]').value)
+  fetch(url)
     .then(function (res) { return res.json(); })
     .then(function (json) {
       try {
