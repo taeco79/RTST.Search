@@ -15,7 +15,128 @@ var mime = {
 };
 
 module.exports = {
-  getMembers: function (dbConn, req, res, PAGE, KEYWORD) {
+  publishRights: function (dbConn, patent) {
+    return new Promise((resolve, reject) => {
+      this.getRights(dbConn, patent)
+        .then(datas => {
+          if (datas.length === 0)
+            reject('-');
+          var html = '';
+          html = '<ul>';
+          for (var i = 0; i < datas.length; i++) {
+            html += '<li>';
+            if (datas[i].nice === '')
+              html += datas[i].name;
+            else {
+              html += '<a href="/detail/nice/' + datas[i].nice + '">';
+              html += datas[i].name;
+              html += '</a>';
+            }
+            html += '</li>';
+          }
+          html += '</ul>';
+          resolve(html);
+        })
+        .catch(err => {
+          resolve('실패 <' + err + '>');
+        });
+    });
+  }
+  , getRights: function (dbConn, patent) {
+    return new Promise((resolve, reject) => {
+      var query = '';
+      var param = [];
+      query += 'SELECT TRIM(IFNULL(`id`, \'\')) AS `id`';
+      query += ', TRIM(IFNULL(`name`, \'\')) AS `name`';
+      query += ', TRIM(IFNULL(`nice`, \'\')) AS `nice`';
+      query += ' FROM`TB-PatentRight`';
+      query += ' WHERE`patent` = ?'; param.push(patent);
+      query += ' ORDER BY`index`;';
+      dbConn.query(query, param, (err, RECORDS) => {
+        if (err) {
+          console.log('logined', err);
+          reject(err);
+        } else
+          resolve(RECORDS);
+      });
+    })
+  }
+  , publishApplicants: function (dbConn, patent) {
+    return new Promise((resolve, reject) => {
+      this.getApplicants(dbConn, patent)
+        .then(datas => {
+          if (datas.length === 0)
+            reject('-');
+          var html = '';
+          html = '<ul>';
+          for (var i = 0; i < datas.length; i++) {
+            html += '<li>';
+            if (datas[i].nice === '')
+              html += datas[i].name;
+            else {
+              html += '<a href="/detail/nice/' + datas[i].nice + '">';
+              html += datas[i].name;
+              html += '</a>';
+            }
+            html += '</li>';
+          }
+          html += '</ul>';
+          resolve(html);
+        })
+        .catch(err => {
+          resolve('실패 <' + err + '>');
+        });
+    });
+  }
+  , getApplicants: function (dbConn, patent) {
+    return new Promise((resolve, reject) => {
+      var query = '';
+      var param = [];
+      query += 'SELECT TRIM(IFNULL(`id`, \'\')) AS `id`';
+      query += ', TRIM(IFNULL(`name`, \'\')) AS `name`';
+      query += ', TRIM(IFNULL(`nice`, \'\')) AS `nice`';
+      query += ' FROM`TB-PatentApplicant`';
+      query += ' WHERE`patent` = ?'; param.push(patent);
+      query += ' ORDER BY`index`;';
+      dbConn.query(query, param, (err, RECORDS) => {
+        if (err) {
+          console.log('logined', err);
+          reject(err);
+        } else
+          resolve(RECORDS);
+      });
+    })
+  }
+  , publishIPCs: function (dbConn, patent) {
+    return new Promise((resolve, reject) => {
+      this.getIPCS(dbConn, patent)
+        .then(datas => {
+          if (datas.length === 0)
+            reject('-');
+          var html = '';
+          html = '<ul>';
+          for (var i = 0; i < datas.length; i++)
+            html += '<li>' + datas[i].item + '</li>';
+          html += '</ul>';
+          resolve(html);
+        })
+        .catch(err => {
+          resolve('실패 <' + err + '>');
+        });
+    });
+  }
+  , getIPCS: function (dbConn, patent) {
+    return new Promise((resolve, reject) => {
+      dbConn.query(
+        'SELECT TRIM(IFNULL(`ipc`, \'\')) AS `item` FROM`TB-PatentIPC` WHERE`patent` = ? ORDER BY`index`;'
+        , [patent]
+        , (err, RECORDS) => {
+          resolve(RECORDS);
+        }
+      );
+    })
+  }
+  , getMembers: function (dbConn, req, res, PAGE, KEYWORD) {
     var query = '';
     var param = [];
     query = 'SELECT COUNT(*) AS `Count`';
@@ -72,7 +193,7 @@ module.exports = {
     query += ' FROM `TB-Company`';
     query += ' WHERE `TB-Company`.`isDeleted` = 0';
     if (KEYWORD !== null) {
-      query += ' AND (`TB-Company`.`keyCompany` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
+      query += ' AND (`TB-Company`.`nice` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
       query += ' OR `TB-Company`.`registerNumber` LIKE CONCAT(\'%\', ?, \'%\'))'; param.push(KEYWORD);
     }
     // console.log(query);
@@ -82,8 +203,8 @@ module.exports = {
       } else {
         var query = '';
         var param = [];
-        query = 'SELECT `key` AS `company`';
-        query += ', `keyCompany`';
+        query = 'SELECT `nice` AS `company`';
+        query += ', `code` AS `keyCompany`';
         query += ', `registerNumber`';
         query += ', `name`';
         query += ', `representative`';
@@ -176,35 +297,6 @@ module.exports = {
       }
     })
   }
-  // logined: async function (dbConn, req, callback) {
-  //   if (typeof req.signedCookies.id === 'undefined') return callback(false);
-  //   else if (typeof req.signedCookies.key === 'undefined') return callback(false);
-  //   else {
-  //     console.log(req.signedCookies);
-
-  //     var sql = '';
-  //     sql += 'SELECT `TB-Session`.`Session` AS `No`';
-  //     sql += ' FROM`TB-Session`';
-  //     sql += ' INNER JOIN`TB-Member` ON`TB-Session`.`Member` = `TB-Member`.`Member`';
-  //     sql += ' WHERE`TB-Session`.`Expired` > NOW()';
-  //     sql += ' AND`TB-Member`.`id` <> ?';
-  //     sql += ' AND`TB-Session`.`key` = ?;';
-  //     await dbConn.query(sql, [req.signedCookies.id, req.signedCookies.key], (err, SESSION) => {
-  //       console.log('Session #1');
-  //       if (err) {
-  //         console.log('logined', err);
-  //         return callback(false);
-  //       } else if (SESSION.length !== 1) {
-  //         console.log('Session #2');
-  //         return callback(false);
-  //       } else {
-  //         console.log('Session #3');
-  //         return callback(true);
-  //       }
-  //     });
-  //   }
-  // }
-
   // 세션 테이블 생성
   , TB_Session: function (dbConn, res) {
     fs.readFile('./db/TB-Session.sql', 'utf8', function (err, data) {

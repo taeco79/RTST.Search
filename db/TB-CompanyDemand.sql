@@ -1,30 +1,36 @@
-CREATE TABLE `TB-CompanyDemand` (
+USE `DB-RTST_2101`;
+
+DROP TABLE IF EXISTS `TB-CompanyDemand`;
+
+CREATE TABLE IF NOT EXISTS `TB-CompanyDemand` (
 	`companyDemand` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`company` BIGINT(20) UNSIGNED NULL DEFAULT NULL,
-	`companyName` VARCHAR(50) NOT NULL COMMENT '기업명' COLLATE 'utf8mb4_general_ci',
-	`registerNumber` VARCHAR(50) NULL DEFAULT NULL COMMENT '사업자등록번호' COLLATE 'utf8mb4_general_ci',
-	`keyCompany` VARCHAR(50) NULL DEFAULT NULL COMMENT '기업코드' COLLATE 'utf8mb4_general_ci',
-	`demandingTechnology` VARCHAR(50) NULL DEFAULT NULL COMMENT '수요기술' COLLATE 'utf8mb4_general_ci',
-	`introductoryIntention` VARCHAR(50) NULL DEFAULT NULL COMMENT '기술도입의향' COLLATE 'utf8mb4_general_ci',
-	`technologyTransfer` VARCHAR(50) NULL DEFAULT NULL COMMENT '기술이전' COLLATE 'utf8mb4_general_ci',
-	`technologyTransferDepartment` VARCHAR(50) NULL DEFAULT NULL COMMENT '기술이전전담부서' COLLATE 'utf8mb4_general_ci',
-	`technologyTransferOfficer` VARCHAR(50) NULL DEFAULT NULL COMMENT '수요기술담당자' COLLATE 'utf8mb4_general_ci',
-	`technologyTransferTel` VARCHAR(50) NULL DEFAULT NULL COMMENT '수요기술담당자연락처' COLLATE 'utf8mb4_general_ci',
+	`nice` VARCHAR(50) NULL DEFAULT NULL COMMENT 'NICE업체코드' COLLATE 'utf8mb4_general_ci',
+	`demandingTechnology` VARCHAR(1024) NULL DEFAULT NULL COMMENT '수요기술' COLLATE 'utf8mb4_general_ci',
+	`introductoryIntention` CHAR(1) NULL DEFAULT NULL COMMENT '기술도입의향' COLLATE 'utf8mb4_general_ci',
+	`technologyTransfer` CHAR(1) NULL DEFAULT NULL COMMENT '기술이전' COLLATE 'utf8mb4_general_ci',
+	`technologyTransferDepartment` CHAR(1) NULL DEFAULT NULL COMMENT '기술이전전담부서' COLLATE 'utf8mb4_general_ci',
+	`technologyTransferOfficer` VARCHAR(256) NULL DEFAULT NULL COMMENT '수요기술담당자' COLLATE 'utf8mb4_general_ci',
+	`technologyTransferTel` VARCHAR(256) NULL DEFAULT NULL COMMENT '수요기술담당자연락처' COLLATE 'utf8mb4_general_ci',
 	PRIMARY KEY (`companyDemand`) USING BTREE,
-	UNIQUE INDEX `keyCompany` (`keyCompany`) USING BTREE,
-	INDEX `FK_TB-CompanyDemand_TB-Company` (`company`) USING BTREE,
-	CONSTRAINT `FK_TB-CompanyDemand_TB-Company` FOREIGN KEY (`company`) REFERENCES `DB-RTST`.`TB-Company` (`company`) ON UPDATE CASCADE ON DELETE SET NULL
-)
-COLLATE='utf8mb4_general_ci' ENGINE=InnoDB;
+	UNIQUE INDEX `company` (`company`) USING BTREE,
+	UNIQUE INDEX `nice` (`nice`) USING BTREE,
+	CONSTRAINT `FK_TB-CompanyDemand_TB-Company` FOREIGN KEY (`company`) REFERENCES `DB-RTST_2101`.`TB-Company` (`company`) ON UPDATE CASCADE ON DELETE SET NULL
+) COLLATE='utf8mb4_general_ci' ENGINE=INNODB;
 
 TRUNCATE `TB-CompanyDemand`;
-INSERT INTO `TB-CompanyDemand`(`company`, `companyName`, `registerNumber`, `keyCompany`, `demandingTechnology`, `introductoryIntention`, `technologyTransfer`, `technologyTransferDepartment`, `technologyTransferOfficer`, `technologyTransferTel`)
-SELECT `TB-Company`.`Company`, `corp_demand_db`.`기업명`, `corp_demand_db`.`사업자등록번호`, `corp_demand_db`.`기업코드`
-, CAST(IF(`수요기술` = '-', NULL, `수요기술`) AS INTEGER) AS `demandingTechnology`
-, CAST(IF(`기술도입의향` = '-', NULL, `기술도입의향`) AS INTEGER) AS `introductoryIntention`
-, CAST(IF(`기술이전` = '-', NULL, `기술이전`) AS INTEGER) AS `technologyTransfer`
-, CAST(IF(`기술이전전담부서` = '-', NULL, `기술이전전담부서`) AS INTEGER) AS `technologyTransferDepartment`
-, CAST(IF(`수요기술담당자` = '-', NULL, `수요기술담당자`) AS INTEGER) AS `technologyTransferOfficer`
-, CAST(IF(`수요기술담당자연락처` = '-', NULL, `수요기술담당자연락처`) AS INTEGER) AS `technologyTransferTel`
-FROM `corp_demand_db`
-LEFT OUTER JOIN `TB-Company` ON `corp_demand_db`.`기업코드` = `TB-Company`.`keyCompany`;`TB-CompanyDemand`
+
+INSERT INTO `TB-CompanyDemand`(`company`, `nice`, `demandingTechnology`, `introductoryIntention`, `technologyTransfer`, `technologyTransferDepartment`, `technologyTransferOfficer`, `technologyTransferTel`)
+SELECT `TB-Company`.`company`
+, IF(TRIM(IFNULL(`corp_demand_db`.`NICE업체코드`, '')) = '', NULL, TRIM(IFNULL(`corp_demand_db`.`NICE업체코드`, ''))) AS `nice`
+, IF(TRIM(IFNULL(`corp_demand_db`.`수요기술`, '')) = '', NULL, TRIM(IFNULL(`corp_demand_db`.`수요기술`, ''))) AS `demandingTechnology`
+, IF(TRIM(IFNULL(`corp_demand_db`.`기술도입의향`, 'N')) LIKE 'Y', 'Y', 'N') AS `introductoryIntention`
+, IF(TRIM(IFNULL(`corp_demand_db`.`기술이전`, 'N')) LIKE 'Y', 'Y', 'N') AS `technologyTransfer`
+, IF(TRIM(IFNULL(`corp_demand_db`.`기술이전 전담부서`, 'N')) LIKE 'Y', 'Y', 'N') AS `technologyTransferDepartment`
+, IF(TRIM(IFNULL(`corp_demand_db`.`수요기술 담당자`, '')) = '', NULL, TRIM(IFNULL(`corp_demand_db`.`수요기술 담당자`, ''))) AS `technologyTransferOfficer`
+, IF(TRIM(IFNULL(`corp_demand_db`.`수요기술 담당자 연락처`, '')) = '', NULL, TRIM(IFNULL(`corp_demand_db`.`수요기술 담당자 연락처`, ''))) AS `technologyTransferTel`
+FROM `TB-Company`
+INNER JOIN `corp_demand_db` ON `TB-Company`.`nice` = `corp_demand_db`.`NICE업체코드`
+WHERE `corp_demand_db`.`isDeleted` = 0;
+
+SELECT COUNT(*) FROM `corp_demand_db` WHERE `corp_demand_db`.`isDeleted` = 0;

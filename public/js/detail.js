@@ -7,15 +7,19 @@ window.onload = function () {
 }
 
 function getFinance() {
-  if (location.pathname.match(/^\/detail\/company/) === null)
+  if (location.pathname.match(/^\/detail\/(company|nice)/) === null)
     return null;
 
   while (document.querySelectorAll('#finance > li').length)
     document.querySelector('#finance > li').remove();
 
+  while (document.querySelector('#finance').classList.length)
+    document.querySelector('#finance').classList.remove(document.querySelector('#finance').classList[0]);
+
   fetch('/finance/' + location.pathname.replace(/^.*\//, ''))
     .then(function (res) { return res.json(); })
     .then(function (json) {
+      if (json.data.length === 0) throw '데이터가 존재하지 않습니다.';
       if (checkError(json)) {
 
         document.querySelector('#finance').appendChild(document.createElement('li'));
@@ -54,20 +58,26 @@ function getFinance() {
       }
     })
     .catch(function (err) {
-      console.log('News', 'catch', err);
+      console.log(err);
+      document.querySelector('#finance').classList.add('none');
     });
 }
 
 function getDemand() {
-  if (location.pathname.match(/^\/detail\/company/) === null)
+  if (location.pathname.match(/^\/detail\/(company|nice)/) === null)
     return null;
 
   while (document.querySelectorAll('#demand > li').length)
     document.querySelectorAll('#demand > li')[0].remove();
 
+  while (document.querySelector('#demand').classList.length)
+    document.querySelector('#demand').classList.remove(document.querySelector('#demand').classList[0]);
+
   fetch('/demand/' + location.pathname.replace(/^.*\//, ''))
     .then(function (res) { return res.json(); })
     .then(function (json) {
+      if (json.data.length === 0) throw '데이터가 존재하지 않습니다.';
+
       if (checkError(json)) {
         document.querySelector('#demand').appendChild(document.createElement('li'));
         document.querySelector('#demand > li:last-child').appendChild(document.createElement('div'));
@@ -94,12 +104,13 @@ function getDemand() {
       }
     })
     .catch(function (err) {
-      console.log('News', 'catch', err);
+      console.log(err);
+      document.querySelector('#demand').classList.add('none');
     });
 }
 
 function getNews(keyword, limit, page) {
-  if (location.pathname.match(/^\/detail\/company/) === null)
+  if (location.pathname.match(/^\/detail\/(company|nice)/) === null)
     return null;
 
   while (document.querySelectorAll('#news > li').length)

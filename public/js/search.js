@@ -2,7 +2,7 @@ var timeoutHideMessage = null;
 
 var arrString = {
   Patent: ['특허등록번호', '특허출원번호']
-  , Company: ['사업자등록번호', '기업코드']
+  , Company: ['사업자등록번호', '기업코드', 'NICE업체코드']
 };
 
 var arrSummaryField = {
@@ -18,6 +18,7 @@ var arrSummaryField = {
     , { id: 'registerNumber', title: '사업자등록번호' }
     , { id: 'businessTypes', title: '사업부문명' }
     , { id: 'businessItems', title: '제품명' }
+    , { id: 'products', title: '주요제품명' }
   ]
 };
 
@@ -32,8 +33,9 @@ var arrResultField = {
   , Company: [
     { id: 'name', title: '기업명' }
     , { id: 'registerNumber', title: '사업자등록번호' }
-    , { id: 'businessTypes', title: '사업부문명' }
+    , { id: 'businessTypes', title: '주요제품명' }
     , { id: 'businessItems', title: '제품명' }
+    , { id: 'products', title: '주요제품명' }
   ]
 };
 
@@ -129,12 +131,14 @@ function showSummary(type, value) {
           throw type;
 
         arrSummary.forEach(function (item) {
-          document.querySelector('#summary').appendChild(document.createElement('li'));
-          document.querySelector('#summary > li:last-child').setAttribute('id', item.id);
-          document.querySelector('#summary > li:last-child').appendChild(document.createElement('div'));
-          document.querySelector('#summary > li:last-child > div:last-child').innerText = item.title;
-          document.querySelector('#summary > li:last-child').appendChild(document.createElement('div'));
-          document.querySelector('#summary > li:last-child > div:last-child').appendChild(document.createTextNode(eval('json.data.' + item.id) === null ? '-' : eval('json.data.' + item.id)));
+          if (typeof (eval('json.data.' + item.id)) !== 'undefined') {
+            document.querySelector('#summary').appendChild(document.createElement('li'));
+            document.querySelector('#summary > li:last-child').setAttribute('id', item.id);
+            document.querySelector('#summary > li:last-child').appendChild(document.createElement('div'));
+            document.querySelector('#summary > li:last-child > div:last-child').innerText = item.title;
+            document.querySelector('#summary > li:last-child').appendChild(document.createElement('div'));
+            document.querySelector('#summary > li:last-child > div:last-child').appendChild(document.createTextNode(eval('json.data.' + item.id) === null ? '-' : eval('json.data.' + item.id)));
+          }
         });
       } else {
         document.querySelector('#summary').appendChild(document.createElement('li'));
@@ -190,21 +194,23 @@ function showResult(type, value, p) {
               document.querySelector('#result > a:last-child').classList.add('introductoryIntention');
             document.querySelector('#result > a:last-child').appendChild(document.createElement('ul'));
             arrResultField.Company.forEach(function (item) {
-              document.querySelector('#result > a:last-child > ul').appendChild(document.createElement('li'));
-              document.querySelector('#result > a:last-child > ul > li:last-child').setAttribute('id', item.id);
-              document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
-              document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').innerText = item.title;
-              switch (item.id) {
-                // case 'name':
-                //   document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('a'));
-                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
-                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('href', '/detail/company/' + record.key);
-                //   document.querySelector('#result > a:last-child > ul > li:last-child > a').appendChild(document.createTextNode(eval('record.' + item.id)));
-                //   break;
-                default:
-                  document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
-                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['사업부문명', '제품명'].includes(item.title) ? 'ellipsis-0' : 'ellipsis-1');
-                  document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').appendChild(document.createTextNode(eval('record.' + item.id) === '' ? '-' : eval('record.' + item.id)));
+              if (typeof (eval('record.' + item.id)) !== 'undefined') {
+                document.querySelector('#result > a:last-child > ul').appendChild(document.createElement('li'));
+                document.querySelector('#result > a:last-child > ul > li:last-child').setAttribute('id', item.id);
+                document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
+                document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').innerText = item.title;
+                switch (item.id) {
+                  // case 'name':
+                  //   document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('a'));
+                  //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('target', '_blank');
+                  //   document.querySelector('#result > a:last-child > ul > li:last-child > a').setAttribute('href', '/detail/company/' + record.key);
+                  //   document.querySelector('#result > a:last-child > ul > li:last-child > a').appendChild(document.createTextNode(eval('record.' + item.id)));
+                  //   break;
+                  default:
+                    document.querySelector('#result > a:last-child > ul > li:last-child').appendChild(document.createElement('div'));
+                    document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').classList.add(['사업부문명', '제품명', '주요제품명'].includes(item.title) ? 'ellipsis-0' : 'ellipsis-1');
+                    document.querySelector('#result > a:last-child > ul > li:last-child > div:last-child').appendChild(document.createTextNode(eval('record.' + item.id) === '' ? '-' : eval('record.' + item.id)));
+                }
               }
             });
             limit = 9;

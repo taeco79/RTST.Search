@@ -132,7 +132,7 @@ app.get("/search", (req, res) => {
             else
               if (RESULT.output.type === '특허등록번호')
                 HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 특허</b>를 찾았습니다.');
-              else if (RESULT.output.type === '기업코드')
+              else if (['기업코드', 'NICE업체코드'].includes(RESULT.output.type))
                 HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 기업</b>을 찾았습니다.');
               else
                 HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 ' + RESULT.output.type + '</b>을 찾았습니다.');
@@ -162,12 +162,12 @@ app.get("/summary/:type/:value", (req, res) => {
       var param = [];
       if (['특허등록번호', '특허출원번호'].includes(req.params.type)) {
         query = 'SELECT `inventionTitle`';
-        query += ', `registerNumber`';
-        query += ', DATE_FORMAT(`registerDate`, \'%Y-%m-%d\') AS `registerDate`';
-        query += ', `ipcNumber`';
+        query += ', `patent` AS `registerNumber`';
+        query += ', DATE_FORMAT(`registed`, \'%Y-%m-%d\') AS `registerDate`';
+        query += ', (SELECT `ipc` FROM `TB-PatentIPC` WHERE `patent` = `TB-Patent`.`patent` ORDER BY `index` LIMIT 1) AS `ipcNumber`';
         query += ', `astrtCont`';
         query += ' FROM `TB-Patent`';
-        if (req.params.type === '특허등록번호') query += ' WHERE `registerNumber` = ?';
+        if (req.params.type === '특허등록번호') query += ' WHERE `patent` = ?';
         else query += ' WHERE `applicationNumber` = ?';
         param = [req.params.value];
 
@@ -175,24 +175,20 @@ app.get("/summary/:type/:value", (req, res) => {
         query = 'SELECT *';
         query += ' FROM `TB-Company`';
         if (req.params.type === '사업자등록번호') query += ' WHERE `registerNumber` = ?';
-        else query += ' WHERE `keyCompany` = ?';
+        else query += ' WHERE `code` = ?';
         param = [req.params.value];
       }
 
       if (param.length) {
         db_conn.query(query, param, (err, RESULT) => {
           if (err) {
+            console.log(err);
             res.json({ error: 9, message: err.message });
           } else {
             if (RESULT.length === 0)
               res.json({ error: 9, message: '데이터가 존재하지 않습니다.' });
             else {
-              console.log(RESULT);
-              // res.writeHead(200, { 'Content-Type': 'application/json' });
-              // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT[0] }));
-              // res.end();
-              // delete RESULT[0].patent;
-              res.json({ error: 0, message: 'Sucess - ' + RESULT.length, data: RESULT[0] });
+              res.json({ error: 0, message: 'Sucess', data: RESULT[0] });
             }
           }
         });
@@ -263,13 +259,64 @@ app.post("/summarys/:type", (req, res) => {
           query += ' LIMIT ?, 9;'; param.push((parseInt(req.body.page) - 1) * 9);
           // param = [req.body.values, (parseInt(req.body.page) - 1) * 10];
           break;
+        case 'NICE업체코드':
+          query = 'SELECT `TB-Company`.`nice` AS `company`';
+          query += ', IFNULL(`TB-Company`.`name`, \'\') AS `name`';
+          query += ', IFNULL(`TB-Company`.`registerNumber`, \'\') AS `registerNumber`';
+          // query += ', `TB-Company`.`representative`';
+          // query += ', `TB-Company`.`address`';
+          // query += ', `TB-Company`.`tel`';
+          // query += ', `TB-Company`.`fax`';
+          // query += ', `TB-Company`.`homepage`';
+          // query += ', `TB-Company`.`email`';
+          query += ', IFNULL(`TB-Company`.`products`, \'\') AS `products`';
+          // query += ', `TB-Company`.`businessRegisted`';
+          // query += ', `TB-Company`.`numberOfEmployees`';
+          // query += ', `TB-Company`.`dateByEmployeeCount`';
+          // query += ', `TB-Company`.`isKOSDAQ`';
+          // query += ', `TB-Company`.`isINNOBIZ`';
+          // query += ', `TB-Company`.`isHidenChampion`';
+          // query += ', `TB-Company`.`isVenture`';
+          // query += ', `TB-Company`.`nice`';
+          // query += ', `TB-Company`.`ked`';
+          // query += ', `TB-CompanyDemand`.`companyName`';
+          // query += ', `TB-CompanyDemand`.`registerNumber`';
+          // query += ', `TB-CompanyDemand`.`demandingTechnology`';
+          query += ' , IFNULL(`TB-CompanyDemand`.`introductoryIntention`, \'N\') AS `introductoryIntention`';
+          // query += ', `TB-CompanyDemand`.`technologyTransfer`';
+          // query += ', `TB-CompanyDemand`.`technologyTransferDepartment`';
+          // query += ', `TB-CompanyDemand`.`technologyTransferOfficer`';
+          // query += ', `TB-CompanyDemand`.`technologyTransferTel`';
+          query += ' FROM `TB-Company`';
+          query += ' INNER JOIN `TB-CompanyDemand` ON `TB-Company`.`company` = `TB-CompanyDemand`.`company`';
+          query += ' WHERE `TB-Company`.`nice` IN (?)'; param.push(req.body.values);
+          req.body.filter.forEach(filter => {
+            if (filter === 'demandingTechnology') query += ' AND TRIM(IFNULL(`TB-CompanyDemand`.`demandingTechnology`, \'\')) <> \'\'';
+            if (filter === 'technologyTransferDepartment') query += ' AND TRIM(IFNULL(`TB-CompanyDemand`.`technologyTransferDepartment`, \'N\')) = \'Y\'';
+            if (filter === 'technologyTransfer') query += ' AND TRIM(IFNULL(`TB-CompanyDemand`.`technologyTransfer`, \'N\')) = \'Y\'';
+            if (filter === 'isKOSDAQ') query += ' AND TRIM(IFNULL(`TB-Company`.`isKOSDAQ`, \'N\')) = \'Y\'';
+            if (filter === 'isINNOBIZ') query += ' AND TRIM(IFNULL(`TB-Company`.`isINNOBIZ`, \'N\')) = \'Y\'';
+            if (filter === 'isHidenChampion') query += ' AND TRIM(IFNULL(`TB-Company`.`isHidenChampion`, \'N\')) = \'Y\'';
+            if (filter === 'isVenture') query += ' AND TRIM(IFNULL(`TB-Company`.`isVenture`, \'N\')) = \'Y\'';
+
+          });
+          query += ' ORDER BY IFNULL(`TB-CompanyDemand`.`introductoryIntention`, \'N\') DESC';
+          query += ' , CASE `TB-Company`.`nice`';
+          var idx = 0;
+          req.body.values.forEach(item => {
+            query += ' WHEN ? THEN ?'; param.push(item); param.push(idx++);
+          });
+          query += ' END ASC';
+          query += ' LIMIT ?, 9;'; param.push((parseInt(req.body.page) - 1) * 9);
+          // param = [req.body.values, (parseInt(req.body.page) - 1) * 10];
+          break;
         case '특허등록번호':
           query = 'SELECT `TB-Patent`.`patent`';
           query += ', `TB-Patent`.`inventionTitle`';
           // query += ', `TB-Patent`.`applicationNumber`';
           // query += ', `TB-Patent`.`applicationDate`';
-          query += ', `TB-Patent`.`registerNumber`';
-          query += ', DATE_FORMAT( `TB-Patent`.`registerDate`, \'%Y-%m-%d\')`registerDate`';
+          query += ', `TB-Patent`.`patent` AS `registerNumber`';
+          query += ', DATE_FORMAT( `TB-Patent`.`registed`, \'%Y-%m-%d\')`registerDate`';
           // query += ', `TB-Patent`.`expireDate`';
           // query += ', `TB-Patent`.`applicantName`';
           // query += ', `TB-Patent`.`applicantCompany`';
@@ -279,7 +326,7 @@ app.post("/summarys/:type", (req, res) => {
           // query += ', `TB-Patent`.`internationalApplicationDate`';
           // query += ', `TB-Patent`.`internationalPublicationNumber`';
           // query += ', `TB-Patent`.`internationalPublicationDate`';
-          query += ', `TB-Patent`.`ipcNumber`';
+          query += ', (SELECT `ipc` FROM `TB-PatentIPC` WHERE `patent` = `TB-Patent`.`patent` ORDER BY `index` LIMIT 1) AS `ipcNumber`';
           query += ', `TB-Patent`.`astrtCont`';
           // query += ', `TB-Patent`.`representativeClaim`';
           // query += ', `TB-Patent`.`gradeAppraisal`';
@@ -287,11 +334,11 @@ app.post("/summarys/:type", (req, res) => {
           // query += ', `TB-Patent`.`gradeTech`';
           // query += ', `TB-Patent`.`gradeUse`';
           query += ' FROM `TB-Patent`';
-          query += ' WHERE `TB-Patent`.`registerNumber` IN (?)'; param.push(req.body.values);
+          query += ' WHERE `TB-Patent`.`patent` IN (?)'; param.push(req.body.values);
           if (req.body.filter.length) {
-            query += ' AND LEFT(TRIM(IFNULL(`TB-Patent`.`registerNumber`, \'\')), 1) IN (?)'; param.push(req.body.filter);
+            query += ' AND LEFT(TRIM(IFNULL(`TB-Patent`.`patent`, \'\')), 1) IN (?)'; param.push(req.body.filter);
           }
-          query += ' ORDER BY CASE `registerNumber`';
+          query += ' ORDER BY CASE `patent`';
           var idx = 0;
           req.body.values.forEach(item => {
             query += ' WHEN ? THEN ?'; param.push(item); param.push(idx++);
@@ -310,6 +357,11 @@ app.post("/summarys/:type", (req, res) => {
           // console.log(err);
           res.json({ error: 9, message: err.message });
         } else {
+          // if (req.params.type === '특허등록번호')
+          //   RESULT.forEach(function (item) {
+          //     console.log(item);
+          //     item.ipcNumber = '';
+          //   });
           res.json({ error: 0, message: 'Sucess', page: parseInt(req.body.page), data: RESULT });
         }
       });
@@ -324,7 +376,7 @@ app.post("/summarys/:type", (req, res) => {
 app.get("/detail/:class/:id", (req, res) => {
   fn.logined(db_conn, req)
     .then((data) => {
-      fs.readFile('./public/htm/detail.' + req.params.class + '.htm', 'utf8', function (err, HTML) {
+      fs.readFile('./public/htm/detail.' + (['company', 'nice'].includes(req.params.class) ? 'company' : 'patent') + '.htm', 'utf8', function (err, HTML) {
         var query = '';
         var param = [];
         switch (req.params.class) {
@@ -338,9 +390,10 @@ app.get("/detail/:class/:id", (req, res) => {
             query += ', trim(IFNULL(`TB-Company`.`homepage`, \'\')) AS `homepage`';
             // query += ', \'http://www.naver.com\' AS `homepage`';
             query += ', IFNULL(`TB-Company`.`email`, \'-\') AS `email`';
-            query += ', IFNULL(`TB-Company`.`businessTypes`, \'-\') AS `businessTypes`';
-            query += ', IFNULL(`TB-Company`.`businessItems`, \'-\') AS `businessItems`';
-            query += ', IFNULL(DATE_FORMAT(`TB-Company`.`businessRegisted`, \'%Y-%m-%d\'), \'-\') AS `businessRegisted`';
+            // query += ', IFNULL(`TB-Company`.`businessTypes`, \'-\') AS `businessTypes`';
+            // query += ', IFNULL(`TB-Company`.`businessItems`, \'-\') AS `businessItems`';
+            query += ', IFNULL(`TB-Company`.`products`, \'-\') AS `products`';
+            query += ', IFNULL(DATE_FORMAT(`TB-Company`.`registed`, \'%Y-%m-%d\'), \'-\') AS `businessRegisted`';
             query += ', IFNULL(FORMAT(`TB-Company`.`numberOfEmployees`, 0), \'-\') AS `numberOfEmployees`';
             query += ', `TB-Company`.`numberOfEmployees`';
             query += ', IFNULL(DATE_FORMAT(`TB-Company`.`dateByEmployeeCount`, \'%Y-%m-%d\'), \'-\') AS `dateByEmployeeCount`';
@@ -349,59 +402,116 @@ app.get("/detail/:class/:id", (req, res) => {
             query += ', IFNULL(`TB-Company`.`isHidenChampion`, \'N\') AS `isHidenChampion`';
             query += ', IFNULL(`TB-Company`.`isVenture`, \'N\') AS `isVenture`';
             query += ', `TB-Company`.`nice`';
-            query += ', `TB-Company`.`ked`';
+            // query += ', `TB-Company`.`ked`';
             query += ', IFNULL(`TB-CompanyDemand`.`demandingTechnology`, \'-\') AS `demandingTechnology`';
             query += ', IFNULL(`TB-CompanyDemand`.`introductoryIntention`, \'-\') AS `introductoryIntention`';
             query += ', IFNULL(`TB-CompanyDemand`.`technologyTransfer`, \'-\') AS `technologyTransfer`';
             query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferDepartment`, \'-\') AS `technologyTransferDepartment`';
             query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferOfficer`, \'-\') AS `technologyTransferOfficer`';
             query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferTel`, \'-\') AS `technologyTransferTel`';
-            query += ', FORMAT(`TB-CompanyFinance0`.`Assets`, 0) AS `q0Assets`';
-            query += ', FORMAT(`TB-CompanyFinance0`.`Debt`, 0) AS `q0Debt`';
-            query += ', FORMAT(`TB-CompanyFinance0`.`Sale`, 0) AS `q0Sale`';
-            query += ', FORMAT(`TB-CompanyFinance0`.`Profit`, 0) AS `q0Profit`';
-            query += ', FORMAT(`TB-CompanyFinance0`.`NetProfit`, 0) AS `q0NetProfit`';
-            query += ', FORMAT(`TB-CompanyFinance1`.`Assets`, 0) AS `q1Assets`';
-            query += ', FORMAT(`TB-CompanyFinance1`.`Debt`, 0) AS `q1Debt`';
-            query += ', FORMAT(`TB-CompanyFinance1`.`Sale`, 0) AS `q1Sale`';
-            query += ', FORMAT(`TB-CompanyFinance1`.`Profit`, 0) AS `q1Profit`';
-            query += ', FORMAT(`TB-CompanyFinance1`.`NetProfit`, 0) AS `q1NetProfit`';
-            query += ', FORMAT(`TB-CompanyFinance2`.`Assets`, 0) AS `q2Assets`';
-            query += ', FORMAT(`TB-CompanyFinance2`.`Debt`, 0) AS `q2Debt`';
-            query += ', FORMAT(`TB-CompanyFinance2`.`Sale`, 0) AS `q2Sale`';
-            query += ', FORMAT(`TB-CompanyFinance2`.`Profit`, 0) AS `q2Profit`';
-            query += ', FORMAT(`TB-CompanyFinance2`.`NetProfit`, 0) AS `q2NetProfit`';
-            query += ', FORMAT(`TB-CompanyFinance3`.`Assets`, 0) AS `q3Assets`';
-            query += ', FORMAT(`TB-CompanyFinance3`.`Debt`, 0) AS `q3Debt`';
-            query += ', FORMAT(`TB-CompanyFinance3`.`Sale`, 0) AS `q3Sale`';
-            query += ', FORMAT(`TB-CompanyFinance3`.`Profit`, 0) AS `q3Profit`';
-            query += ', FORMAT(`TB-CompanyFinance3`.`NetProfit`, 0) AS `q3NetProfit`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`Assets`, 0) AS `q0Assets`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`Debt`, 0) AS `q0Debt`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`Sale`, 0) AS `q0Sale`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`Profit`, 0) AS `q0Profit`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`NetProfit`, 0) AS `q0NetProfit`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`Assets`, 0) AS `q1Assets`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`Debt`, 0) AS `q1Debt`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`Sale`, 0) AS `q1Sale`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`Profit`, 0) AS `q1Profit`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`NetProfit`, 0) AS `q1NetProfit`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`Assets`, 0) AS `q2Assets`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`Debt`, 0) AS `q2Debt`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`Sale`, 0) AS `q2Sale`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`Profit`, 0) AS `q2Profit`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`NetProfit`, 0) AS `q2NetProfit`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`Assets`, 0) AS `q3Assets`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`Debt`, 0) AS `q3Debt`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`Sale`, 0) AS `q3Sale`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`Profit`, 0) AS `q3Profit`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`NetProfit`, 0) AS `q3NetProfit`';
             query += ' FROM `TB-Company`';
-            query += ' INNER JOIN `TB-CompanyDemand` ON `TB-Company`.`keyCompany` = `TB-CompanyDemand`.`keyCompany`';
-            query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance0` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance0`.`keyCompany` AND `TB-CompanyFinance0`.`year` = YEAR(NOW()) - 0';
-            query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance1` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance1`.`keyCompany` AND `TB-CompanyFinance1`.`year` = YEAR(NOW()) - 1';
-            query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance2` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance2`.`keyCompany` AND `TB-CompanyFinance2`.`year` = YEAR(NOW()) - 2';
-            query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance3` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance3`.`keyCompany` AND `TB-CompanyFinance3`.`year` = YEAR(NOW()) - 3';
-            query += ' WHERE `TB-Company`.`key` = ?'; param.push(req.params.id);
-            query += ' OR `TB-Company`.`keyCompany` = ?'; param.push(req.params.id);
+            query += ' INNER JOIN `TB-CompanyDemand` ON `TB-Company`.`company` = `TB-CompanyDemand`.`company`';
+            // query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance0` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance0`.`keyCompany` AND `TB-CompanyFinance0`.`year` = YEAR(NOW()) - 0';
+            // query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance1` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance1`.`keyCompany` AND `TB-CompanyFinance1`.`year` = YEAR(NOW()) - 1';
+            // query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance2` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance2`.`keyCompany` AND `TB-CompanyFinance2`.`year` = YEAR(NOW()) - 2';
+            // query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance3` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance3`.`keyCompany` AND `TB-CompanyFinance3`.`year` = YEAR(NOW()) - 3';
+            query += ' WHERE `TB-Company`.`nice` = ?'; param.push(req.params.id);
+            query += ' OR `TB-Company`.`code` = ?'; param.push(req.params.id);
+            break;
+          case 'nice':
+            query = 'SELECT `TB-Company`.`name`';
+            query += ', `TB-Company`.`registerNumber`';
+            query += ', `TB-Company`.`representative`';
+            query += ', IFNULL(`TB-Company`.`address`, \'-\') AS `address`';
+            query += ', IFNULL(`TB-Company`.`tel`, \'-\') AS `tel`';
+            query += ', IFNULL(`TB-Company`.`fax`, \'-\') AS `fax`';
+            query += ', trim(IFNULL(`TB-Company`.`homepage`, \'\')) AS `homepage`';
+            // query += ', \'http://www.naver.com\' AS `homepage`';
+            query += ', IFNULL(`TB-Company`.`email`, \'-\') AS `email`';
+            // query += ', IFNULL(`TB-Company`.`businessTypes`, \'-\') AS `businessTypes`';
+            // query += ', IFNULL(`TB-Company`.`businessItems`, \'-\') AS `businessItems`';
+            query += ', IFNULL(`TB-Company`.`products`, \'-\') AS `products`';
+            query += ', IFNULL(DATE_FORMAT(`TB-Company`.`registed`, \'%Y-%m-%d\'), \'-\') AS `businessRegisted`';
+            query += ', IFNULL(FORMAT(`TB-Company`.`numberOfEmployees`, 0), \'-\') AS `numberOfEmployees`';
+            query += ', `TB-Company`.`numberOfEmployees`';
+            query += ', IFNULL(DATE_FORMAT(`TB-Company`.`dateByEmployeeCount`, \'%Y-%m-%d\'), \'-\') AS `dateByEmployeeCount`';
+            query += ', IFNULL(`TB-Company`.`isKOSDAQ`, \'N\') AS `isKOSDAQ`';
+            query += ', IFNULL(`TB-Company`.`isINNOBIZ`, \'N\') AS `isINNOBIZ`';
+            query += ', IFNULL(`TB-Company`.`isHidenChampion`, \'N\') AS `isHidenChampion`';
+            query += ', IFNULL(`TB-Company`.`isVenture`, \'N\') AS `isVenture`';
+            query += ', `TB-Company`.`nice`';
+            // query += ', `TB-Company`.`ked`';
+            query += ', IFNULL(`TB-CompanyDemand`.`demandingTechnology`, \'-\') AS `demandingTechnology`';
+            query += ', IFNULL(`TB-CompanyDemand`.`introductoryIntention`, \'-\') AS `introductoryIntention`';
+            query += ', IFNULL(`TB-CompanyDemand`.`technologyTransfer`, \'-\') AS `technologyTransfer`';
+            query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferDepartment`, \'-\') AS `technologyTransferDepartment`';
+            query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferOfficer`, \'-\') AS `technologyTransferOfficer`';
+            query += ', IFNULL(`TB-CompanyDemand`.`technologyTransferTel`, \'-\') AS `technologyTransferTel`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`Assets`, 0) AS `q0Assets`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`Debt`, 0) AS `q0Debt`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`Sale`, 0) AS `q0Sale`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`Profit`, 0) AS `q0Profit`';
+            // query += ', FORMAT(`TB-CompanyFinance0`.`NetProfit`, 0) AS `q0NetProfit`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`Assets`, 0) AS `q1Assets`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`Debt`, 0) AS `q1Debt`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`Sale`, 0) AS `q1Sale`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`Profit`, 0) AS `q1Profit`';
+            // query += ', FORMAT(`TB-CompanyFinance1`.`NetProfit`, 0) AS `q1NetProfit`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`Assets`, 0) AS `q2Assets`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`Debt`, 0) AS `q2Debt`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`Sale`, 0) AS `q2Sale`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`Profit`, 0) AS `q2Profit`';
+            // query += ', FORMAT(`TB-CompanyFinance2`.`NetProfit`, 0) AS `q2NetProfit`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`Assets`, 0) AS `q3Assets`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`Debt`, 0) AS `q3Debt`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`Sale`, 0) AS `q3Sale`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`Profit`, 0) AS `q3Profit`';
+            // query += ', FORMAT(`TB-CompanyFinance3`.`NetProfit`, 0) AS `q3NetProfit`';
+            query += ' FROM `TB-Company`';
+            query += ' INNER JOIN `TB-CompanyDemand` ON `TB-Company`.`company` = `TB-CompanyDemand`.`company`';
+            // query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance0` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance0`.`keyCompany` AND `TB-CompanyFinance0`.`year` = YEAR(NOW()) - 0';
+            // query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance1` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance1`.`keyCompany` AND `TB-CompanyFinance1`.`year` = YEAR(NOW()) - 1';
+            // query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance2` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance2`.`keyCompany` AND `TB-CompanyFinance2`.`year` = YEAR(NOW()) - 2';
+            // query += ' LEFT OUTER JOIN `TB-CompanyFinance` AS `TB-CompanyFinance3` ON `TB-Company`.`keyCompany` = `TB-CompanyFinance3`.`keyCompany` AND `TB-CompanyFinance3`.`year` = YEAR(NOW()) - 3';
+            query += ' WHERE `TB-Company`.`nice` = ?'; param.push(req.params.id);
             break;
           case 'patent':
             query = 'SELECT `TB-Patent`.`patent`';
             query += ', `TB-Patent`.`inventionTitle`';
             query += ', `TB-Patent`.`applicationNumber`';
             query += ', IFNULL(DATE_FORMAT(`TB-Patent`.`applicationDate`, \'%Y-%m-%d\'), \'\') AS `applicationDate`';
-            query += ', `TB-Patent`.`registerNumber`';
-            query += ', IFNULL(DATE_FORMAT(`TB-Patent`.`registerDate`, \'%Y-%m-%d\'), \'\') AS `registerDate`';
+            query += ', `TB-Patent`.`patent` AS `registerNumber`';
+            query += ', IFNULL(DATE_FORMAT(`TB-Patent`.`registed`, \'%Y-%m-%d\'), \'\') AS `registerDate`';
             query += ', IFNULL(DATE_FORMAT(`TB-Patent`.`expireDate`, \'%Y-%m-%d\'), \'\') AS `expireDate`';
-            query += ', IFNULL(`TB-Patent`.`applicantName`, \'\') AS `applicantName`';
-            query += ', IFNULL(`TB-Patent`.`applicantCompany`, \'\') AS `applicantCompany`';
-            query += ', IFNULL(`TB-Patent`.`currentName`, \'\') AS `currentName`';
-            query += ', IFNULL(`TB-Patent`.`currentCompany`, \'\') AS `currentCompany`';
+            // query += ', IFNULL(`TB-Patent`.`applicantName`, \'\') AS `applicantName`';
+            // query += ', IFNULL(`TB-Patent`.`applicantCompany`, \'\') AS `applicantCompany`';
+            // query += ', IFNULL(`TB-Patent`.`currentName`, \'\') AS `currentName`';
+            // query += ', IFNULL(`TB-Patent`.`currentCompany`, \'\') AS `currentCompany`';
             query += ', `TB-Patent`.`internationalApplicationNumber`';
             query += ', IFNULL(DATE_FORMAT(`TB-Patent`.`internationalApplicationDate`, \'%Y-%m-%d\'), \'\') AS `internationalApplicationDate`';
             query += ', `TB-Patent`.`internationalPublicationNumber`';
             query += ', IFNULL(DATE_FORMAT(`TB-Patent`.`internationalPublicationDate`, \'%Y-%m-%d\'), \'\') AS `internationalPublicationDate`';
-            query += ', `TB-Patent`.`ipcNumber`';
+            // query += ', `TB-Patent`.`ipcNumber`';
             query += ', `TB-Patent`.`astrtCont`';
             query += ', `TB-Patent`.`representativeClaim`';
             query += ', IFNULL(`TB-Patent`.`gradeAppraisal`, \'-\') AS `gradeAppraisal`';
@@ -409,7 +519,7 @@ app.get("/detail/:class/:id", (req, res) => {
             query += ', IFNULL(`TB-Patent`.`gradeTech`, \'-\') AS `gradeTech`';
             query += ', IFNULL(`TB-Patent`.`gradeUse`, \'-\') AS `gradeUse`';
             query += 'FROM`TB-Patent`';
-            query += 'WHERE`TB-Patent`.`registerNumber` = ?;'; param.push(req.params.id);
+            query += 'WHERE`TB-Patent`.`patent` = ?;'; param.push(req.params.id);
             break;
           default:
             console.log('#########################');
@@ -418,7 +528,7 @@ app.get("/detail/:class/:id", (req, res) => {
         }
         db_conn.query(query, param, (err, RESULT) => {
           if (err) {
-            // console.log(err);
+            console.log(err);
             res.json({ error: 9, message: err.message });
           } else {
             let reg = null;
@@ -432,61 +542,83 @@ app.get("/detail/:class/:id", (req, res) => {
                 tmpVAL = value
                 if (field === 'homepage') {
                   tmpVAL = tmpVAL === '' ? '-' : '<a href="' + tmpVAL + '" target="_blank">' + tmpVAL + '</a>';
-                } else if (field === 'applicantName') {
-                  tempKeys = tmpVAL.split('||');
-                  tempVals = RESULT[0].applicantCompany.split('||');
-                  console.log('##############################');
-                  console.log('SPLIT', tempKeys, tempVals);
-                  console.log('##############################');
-                  tmpVAL = '<ul>';
-                  for (var i = 0; i < tempKeys.length; i++) {
-                    tmpVAL += '<li>';
-                    if (!['', '-'].includes(tempVals[i])) {
-                      tmpVAL += '<a href="/detail/company/' + tempVals[i] + '">';
-                      tmpVAL += tempKeys[i];
-                      tmpVAL += '</a>';
-                    } else
-                      tmpVAL += tempKeys[i];
-                    tmpVAL += '</li>';
-                  }
-                  tmpVAL = tmpVAL !== '<ul>' ? tmpVAL + '</ul>' : '';
-                } else if (field === 'currentName') {
-                  tempKeys = tmpVAL.split('||');
-                  tempVals = RESULT[0].currentCompany.split('||');
-                  console.log('##############################');
-                  console.log('SPLIT', tempKeys, tempVals);
-                  console.log('##############################');
-                  tmpVAL = '<ul>';
-                  for (var i = 0; i < tempKeys.length; i++) {
-                    tmpVAL += '<li>';
-                    if (!['', '-'].includes(tempVals[i])) {
-                      tmpVAL += '<a href="/detail/company/' + tempVals[i] + '">';
-                      tmpVAL += tempKeys[i];
-                      tmpVAL += '</a>';
-                    } else
-                      tmpVAL += tempKeys[i];
-                    tmpVAL += '</li>';
-                  }
-                  tmpVAL = tmpVAL !== '<ul>' ? tmpVAL + '</ul>' : '';
-                } else if (field === 'ipcNumber') {
-                  tempKeys = tmpVAL.split('||');
-                  tmpVAL = '<ul>';
-                  for (var i = 0; i < tempKeys.length; i++) {
-                    tmpVAL += '<li>';
-                    if (tempKeys[i] !== '-') {
-                      tmpVAL += tempKeys[i];
-                    } else
-                      tmpVAL += tempKeys[i];
-                    tmpVAL += '</li>';
-                  }
-                  tmpVAL = tmpVAL !== '<ul>' ? tmpVAL + '</ul>' : '';
+                  // } else if (field === 'applicantName') {
+                  //   tempKeys = tmpVAL.split('||');
+                  //   tempVals = RESULT[0].applicantCompany.split('||');
+                  //   console.log('##############################');
+                  //   console.log('SPLIT', tempKeys, tempVals);
+                  //   console.log('##############################');
+                  //   tmpVAL = '<ul>';
+                  //   for (var i = 0; i < tempKeys.length; i++) {
+                  //     tmpVAL += '<li>';
+                  //     if (!['', '-'].includes(tempVals[i])) {
+                  //       tmpVAL += '<a href="/detail/company/' + tempVals[i] + '">';
+                  //       tmpVAL += tempKeys[i];
+                  //       tmpVAL += '</a>';
+                  //     } else
+                  //       tmpVAL += tempKeys[i];
+                  //     tmpVAL += '</li>';
+                  //   }
+                  //   tmpVAL = tmpVAL !== '<ul>' ? tmpVAL + '</ul>' : '';
+                  // } else if (field === 'currentName') {
+                  //   tempKeys = tmpVAL.split('||');
+                  //   tempVals = RESULT[0].currentCompany.split('||');
+                  //   console.log('##############################');
+                  //   console.log('SPLIT', tempKeys, tempVals);
+                  //   console.log('##############################');
+                  //   tmpVAL = '<ul>';
+                  //   for (var i = 0; i < tempKeys.length; i++) {
+                  //     tmpVAL += '<li>';
+                  //     if (!['', '-'].includes(tempVals[i])) {
+                  //       tmpVAL += '<a href="/detail/company/' + tempVals[i] + '">';
+                  //       tmpVAL += tempKeys[i];
+                  //       tmpVAL += '</a>';
+                  //     } else
+                  //       tmpVAL += tempKeys[i];
+                  //     tmpVAL += '</li>';
+                  //   }
+                  //   tmpVAL = tmpVAL !== '<ul>' ? tmpVAL + '</ul>' : '';
+                  // } else if (field === 'ipcNumber') {
+                  //   tempKeys = tmpVAL.split('||');
+                  //   tmpVAL = '<ul>';
+                  //   for (var i = 0; i < tempKeys.length; i++) {
+                  //     tmpVAL += '<li>';
+                  //     if (tempKeys[i] !== '-') {
+                  //       tmpVAL += tempKeys[i];
+                  //     } else
+                  //       tmpVAL += tempKeys[i];
+                  //     tmpVAL += '</li>';
+                  //   }
+                  //   tmpVAL = tmpVAL !== '<ul>' ? tmpVAL + '</ul>' : '';
                 }
                 reg = new RegExp('##' + field + '##', 'gi');
                 HTML = HTML.replace(reg, tmpVAL === null ? '-' : tmpVAL);
               }
-            res.writeHead(200, {});
-            res.end(HTML);
 
+            if (req.params.class === 'patent') {
+              Promise.all([
+                fn.publishApplicants(db_conn, req.params.id)
+                , fn.publishRights(db_conn, req.params.id)
+                , fn.publishIPCs(db_conn, req.params.id)
+              ])
+                .then(htmls => {
+                  console.log('HTMLS', htmls);
+                  HTML = HTML.replace(/##applicantName##/g, htmls[0]);
+                  HTML = HTML.replace(/##currentName##/g, htmls[1]);
+                  HTML = HTML.replace(/##ipcNumber##/g, htmls[2]);
+
+                  res.writeHead(200, {});
+                  res.end(HTML);
+                })
+                .catch(err => {
+                  console.log('ERROR', err);
+                  res.writeHead(200, {});
+                  res.end(HTML);
+                });
+            } else {
+              res.writeHead(200, {});
+              res.end(HTML);
+            }
           }
         });
       });
@@ -503,8 +635,8 @@ app.get("/news/:keyword/:limit/:page", (req, res) => {
       var param = [];
       query = 'SELECT `name`';
       query += ' FROM `TB-Company`';
-      query += ' WHERE `key` = ?'; param.push(req.params.keyword);
-      query += ' OR `keyCompany` = ?'; param.push(req.params.keyword);
+      query += ' WHERE `nice` = ?'; param.push(req.params.keyword);
+      query += ' OR `code` = ?'; param.push(req.params.keyword);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
           res.json({ error: 9, message: err.message });
@@ -803,7 +935,7 @@ app.get("/companyAll/:id", (req, res) => {
     .then((data) => {
       var query = '';
       var param = [];
-      query = 'SELECT `TB-Company`.`key` AS `company`';
+      query = 'SELECT `TB-Company`.`nice` AS `company`';
       query += ', `TB-Company`.`name`';
       query += ', `TB-Company`.`registerNumber`';
       query += ', `TB-Company`.`representative`';
@@ -812,9 +944,10 @@ app.get("/companyAll/:id", (req, res) => {
       query += ', `TB-Company`.`fax`';
       query += ', `TB-Company`.`homepage`';
       query += ', `TB-Company`.`email`';
-      query += ', `TB-Company`.`businessTypes`';
-      query += ', `TB-Company`.`businessItems`';
-      query += ', DATE_FORMAT(`TB-Company`.`businessRegisted`, \'%Y-%m-%d\') AS`businessRegisted`';
+      // query += ', `TB-Company`.`businessTypes`';
+      // query += ', `TB-Company`.`businessItems`';
+      query += ', `TB-Company`.`products`';
+      query += ', DATE_FORMAT(`TB-Company`.`registed`, \'%Y-%m-%d\') AS`businessRegisted`';
       query += ', `TB-Company`.`numberOfEmployees`';
       query += ', DATE_FORMAT(`TB-Company`.`dateByEmployeeCount`, \'%Y-%m-%d\') AS`dateByEmployeeCount`';
       query += ', `TB-Company`.`isKOSDAQ`';
@@ -822,8 +955,8 @@ app.get("/companyAll/:id", (req, res) => {
       query += ', `TB-Company`.`isHidenChampion`';
       query += ', `TB-Company`.`isVenture`';
       query += ', `TB-Company`.`nice`';
-      query += ', `TB-Company`.`ked`';
-      query += ', `TB-Company`.`keyCompany`';
+      // query += ', `TB-Company`.`ked`';
+      query += ', `TB-Company`.`code` AS `keyCompany`';
       query += ', `TB-CompanyDemand`.`demandingTechnology`';
       query += ', `TB-CompanyDemand`.`introductoryIntention`';
       query += ', `TB-CompanyDemand`.`technologyTransfer`';
@@ -833,7 +966,7 @@ app.get("/companyAll/:id", (req, res) => {
       query += ' FROM `TB-Company`';
       query += ' LEFT OUTER JOIN `TB-CompanyDemand` ON `TB-Company`.`company` = `TB-CompanyDemand`.`company`';
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
-      query += ' AND `TB-Company`.`key` = ?'; param.push(req.params.id);
+      query += ' AND `TB-Company`.`nice` = ?'; param.push(req.params.id);
       // console.log(query);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
@@ -862,7 +995,7 @@ app.put("/companyAll/:id", (req, res) => {
       query += ', `TB-Company`.`isHidenChampion` = ?'; param.push(req.body.isHidenChampion);
       query += ', `TB-Company`.`isVenture` = ?'; param.push(req.body.isVenture);
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
-      query += ' AND `TB-Company`.`key` = ?'; param.push(req.params.id);
+      query += ' AND `TB-Company`.`nice` = ?'; param.push(req.params.id);
       // console.log(query);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
@@ -870,11 +1003,8 @@ app.put("/companyAll/:id", (req, res) => {
         } else {
           var query = '';
           var param = [];
-          query = 'INSERT INTO `TB-CompanyDemand` (`company`, `companyName`, `registerNumber`, `keyCompany`, `demandingTechnology`, `introductoryIntention`, `technologyTransfer`, `technologyTransferDepartment`, `technologyTransferOfficer`, `technologyTransferTel`)';
+          query = 'INSERT INTO `TB-CompanyDemand` (`company`, `demandingTechnology`, `introductoryIntention`, `technologyTransfer`, `technologyTransferDepartment`, `technologyTransferOfficer`, `technologyTransferTel`)';
           query += ' SELECT `company`';
-          query += ', `name` AS`companyName`';
-          query += ', `registerNumber`';
-          query += ', `keyCompany`';
           query += ', ? AS`demandingTechnology`'; param.push(req.body.demandingTechnology);
           query += ', ? AS`introductoryIntention`'; param.push(req.body.introductoryIntention);
           query += ', ? AS`technologyTransfer`'; param.push(req.body.technologyTransfer);
@@ -883,7 +1013,7 @@ app.put("/companyAll/:id", (req, res) => {
           query += ', ? AS`technologyTransferTel`'; param.push(req.body.technologyTransferTel);
           query += ' FROM`TB-Company`';
           query += ' WHERE`isDeleted` = 0';
-          query += ' AND`key` = ?'; param.push(req.params.id);
+          query += ' AND `nice` = ?'; param.push(req.params.id);
           query += ' ON DUPLICATE KEY UPDATE `demandingTechnology` = ?'; param.push(req.body.demandingTechnology);
           query += ', `introductoryIntention` = ?'; param.push(req.body.introductoryIntention);
           query += ', `technologyTransfer` = ?'; param.push(req.body.technologyTransfer);
@@ -924,8 +1054,8 @@ app.get("/demand/:id", (req, res) => {
       query += ' LEFT OUTER JOIN `TB-CompanyDemand` ON `TB-Company`.`company` = `TB-CompanyDemand`.`company`';
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
       query += ' AND ';
-      query += ' (`TB-Company`.`key` = ?'; param.push(req.params.id);
-      query += ' OR `TB-Company`.`keyCompany` = ?)'; param.push(req.params.id);
+      query += ' (`TB-Company`.`nice` = ?'; param.push(req.params.id);
+      query += ' OR `TB-Company`.`code` = ?)'; param.push(req.params.id);
       // console.log(query);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
@@ -949,23 +1079,24 @@ app.get("/finance/:id", (req, res) => {
       var query = '';
       var param = [];
       query = 'SELECT `TB-CompanyFinance`.`year`';
-      query += ', `TB-CompanyFinance`.`quarter`';
+      query += ', NULL AS `quarter`';
       query += ', IFNULL(`TB-CompanyFinance`.`Assets`, 0) AS `Assets`';
       query += ', IFNULL(`TB-CompanyFinance`.`Debt`, 0) AS `Debt`';
       query += ', IFNULL(`TB-CompanyFinance`.`Sale`, 0) AS `Sale`';
       query += ', IFNULL(`TB-CompanyFinance`.`Profit`, 0) AS `Profit`';
       query += ', IFNULL(`TB-CompanyFinance`.`NetProfit`, 0) AS `NetProfit`';
       query += ' FROM `TB-Company`';
-      query += ' LEFT OUTER JOIN `TB-CompanyFinance` ON `TB-Company`.`company` = `TB-CompanyFinance`.`company`';
+      query += ' INNER JOIN `TB-CompanyFinance` ON `TB-Company`.`company` = `TB-CompanyFinance`.`company`';
       query += ' WHERE `TB-Company`.`isDeleted` = 0';
       query += ' AND';
-      query += ' (`TB-Company`.`key` = ?'; param.push(req.params.id);
-      query += ' OR `TB-Company`.`keyCompany` = ?)'; param.push(req.params.id);
+      query += ' (`TB-Company`.`nice` = ?'; param.push(req.params.id);
+      query += ' OR `TB-Company`.`code` = ?)'; param.push(req.params.id);
       query += ' ORDER BY `TB-CompanyFinance`.`year` DESC';
-      query += ', `TB-CompanyFinance`.`quarter` DESC';
+      // query += ', `TB-CompanyFinance`.`quarter` DESC';
       // console.log(query);
       db_conn.query(query, param, (err, RESULT) => {
         if (err) {
+          console.log(err);
           res.json({ error: 9, message: err.message });
         } else {
           // console.log(RESULT);
