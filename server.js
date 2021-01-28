@@ -184,12 +184,16 @@ app.get("/summary/:type/:value", (req, res) => {
           if (err) {
             res.json({ error: 9, message: err.message });
           } else {
-            // console.log(RESULT);
-            // res.writeHead(200, { 'Content-Type': 'application/json' });
-            // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT[0] }));
-            // res.end();
-            delete RESULT[0].patent;
-            res.json({ error: 0, message: 'Sucess', data: RESULT[0] });
+            if (RESULT.length === 0)
+              res.json({ error: 9, message: '데이터가 존재하지 않습니다.' });
+            else {
+              console.log(RESULT);
+              // res.writeHead(200, { 'Content-Type': 'application/json' });
+              // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT[0] }));
+              // res.end();
+              // delete RESULT[0].patent;
+              res.json({ error: 0, message: 'Sucess - ' + RESULT.length, data: RESULT[0] });
+            }
           }
         });
       } else res.json({ error: 9, message: req.params.type });
