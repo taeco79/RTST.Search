@@ -48,8 +48,8 @@ app.post("/login", (req, res) => {
       sql = '';
       sql += 'UPDATE `TB-Session`';
       sql += ' SET `Expired` = NOW()';
-      sql += ', `Member` = ?';
-      sql += ' WHERE `Expired` > NOW()';
+      sql += ' WHERE `Member` = ?';
+      sql += ' AND `Expired` > NOW()';
       db_conn.query(sql, [MEMBER[0].No], (err, EXPIRED) => {
         if (err) {
           // console.log(err);
@@ -106,8 +106,7 @@ app.post("/login", (req, res) => {
 });
 
 app.all("/logout", (req, res) => {
-  res.clearCookie('key');
-  res.clearCookie('name');
+  fn.clearSession(req, res);
   res.redirect('/');
 });
 
@@ -151,6 +150,7 @@ app.get("/search", (req, res) => {
         });
     })
     .catch((err) => {
+      fn.clearSession(req, res);
       res.redirect('/');
     });
 });
@@ -195,8 +195,7 @@ app.get("/summary/:type/:value", (req, res) => {
       } else res.json({ error: 9, message: req.params.type });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -367,8 +366,7 @@ app.post("/summarys/:type", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -624,6 +622,7 @@ app.get("/detail/:class/:id", (req, res) => {
       });
     })
     .catch((err) => {
+      fn.clearSession(req, res);
       res.redirect('/');
     });
 });
@@ -667,8 +666,7 @@ app.get("/news/:keyword/:limit/:page", (req, res) => {
       })
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -724,8 +722,7 @@ app.post("/member", (req, res) => {
       if (err === 'redirect')
         res.json({ error: 9, message: 'Permission denied.' });
       else {
-        res.clearCookie('key');
-        res.clearCookie('name');
+        fn.clearSession(req, res);
         res.json({ error: 8, message: 'Session out.' });
       }
     });
@@ -737,8 +734,7 @@ app.get("/members/:page", (req, res) => {
       fn.getMembers(db_conn, req, res, req.params.page, null);
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -749,8 +745,7 @@ app.get("/members/:page/:keyword", (req, res) => {
       fn.getMembers(db_conn, req, res, req.params.page, req.params.keyword);
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -783,8 +778,7 @@ app.del("/members", (req, res) => {
       if (err === 'redirect')
         res.json({ error: 9, message: 'Permission denied.' });
       else {
-        res.clearCookie('key');
-        res.clearCookie('name');
+        fn.clearSession(req, res);
         res.json({ error: 8, message: 'Session out.' });
       }
     });
@@ -817,8 +811,7 @@ app.del("/member/:id", (req, res) => {
       if (err === 'redirect')
         res.json({ error: 9, message: 'Permission denied.' });
       else {
-        res.clearCookie('key');
-        res.clearCookie('name');
+        fn.clearSession(req, res);
         res.json({ error: 8, message: 'Session out.' });
       }
     });
@@ -853,8 +846,7 @@ app.put("/member/:id", (req, res) => {
       if (err === 'redirect')
         res.json({ error: 9, message: 'Permission denied.' });
       else {
-        res.clearCookie('key');
-        res.clearCookie('name');
+        fn.clearSession(req, res);
         res.json({ error: 8, message: 'Session out.' });
       }
     });
@@ -866,8 +858,7 @@ app.get("/companys/:page", (req, res) => {
       fn.getCompanys(db_conn, req, res, req.params.page, null);
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -878,8 +869,7 @@ app.get("/companys/:page/:keyword", (req, res) => {
       fn.getCompanys(db_conn, req, res, req.params.page, req.params.keyword);
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -924,8 +914,7 @@ app.get("/company/:id", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -978,8 +967,7 @@ app.get("/companyAll/:id", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -1033,8 +1021,7 @@ app.put("/companyAll/:id", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -1067,8 +1054,7 @@ app.get("/demand/:id", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -1105,8 +1091,7 @@ app.get("/finance/:id", (req, res) => {
       });
     })
     .catch((err) => {
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       res.json({ error: 8, message: 'Session out.' });
     });
 });
@@ -1126,9 +1111,7 @@ app.get("*", (req, res) => {
       });
     })
     .catch((err) => {
-      // console.log(err.message);
-      res.clearCookie('key');
-      res.clearCookie('name');
+      fn.clearSession(req, res);
       fs.readFile('./public/htm/login.htm', 'utf8', function (err, data) {
         res.writeHead(200, {});
         res.end(data);

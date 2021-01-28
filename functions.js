@@ -15,7 +15,13 @@ var mime = {
 };
 
 module.exports = {
-  publishRights: function (dbConn, patent) {
+  clearSession: function (req, res) {
+    console.log('SESSION - CLEAR', req.url);
+
+    res.clearCookie('key');
+    res.clearCookie('name');
+  }
+  , publishRights: function (dbConn, patent) {
     return new Promise((resolve, reject) => {
       this.getRights(dbConn, patent)
         .then(datas => {
