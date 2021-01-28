@@ -7,6 +7,9 @@ window.onload = function () {
 }
 
 function getFinance() {
+  if (location.pathname.match(/^\/detail\/company/) === null)
+    return null;
+
   while (document.querySelectorAll('#finance > li').length)
     document.querySelector('#finance > li').remove();
 
@@ -56,6 +59,9 @@ function getFinance() {
 }
 
 function getDemand() {
+  if (location.pathname.match(/^\/detail\/company/) === null)
+    return null;
+
   while (document.querySelectorAll('#demand > li').length)
     document.querySelectorAll('#demand > li')[0].remove();
 
@@ -93,6 +99,9 @@ function getDemand() {
 }
 
 function getNews(keyword, limit, page) {
+  if (location.pathname.match(/^\/detail\/company/) === null)
+    return null;
+
   while (document.querySelectorAll('#news > li').length)
     document.querySelectorAll('#news > li')[0].remove();
 
