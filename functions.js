@@ -199,7 +199,7 @@ module.exports = {
     query += ' FROM `TB-Company`';
     query += ' WHERE `TB-Company`.`isDeleted` = 0';
     if (KEYWORD !== null) {
-      query += ' AND (`TB-Company`.`nice` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
+      query += ' AND (`TB-Company`.`code` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
       query += ' OR `TB-Company`.`registerNumber` LIKE CONCAT(\'%\', ?, \'%\'))'; param.push(KEYWORD);
     }
     // console.log(query);
@@ -233,7 +233,7 @@ module.exports = {
         query += ' FROM `TB-Company`';
         query += ' WHERE `TB-Company`.`isDeleted` = 0';
         if (KEYWORD !== null) {
-          query += ' AND (`TB-Company`.`keyCompany` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
+          query += ' AND (`TB-Company`.`code` LIKE CONCAT(\'%\', ?, \'%\')'; param.push(KEYWORD);
           query += ' OR `TB-Company`.`registerNumber` LIKE CONCAT(\'%\', ?, \'%\'))'; param.push(KEYWORD);
         }
         // console.log(query);
