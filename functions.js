@@ -165,7 +165,7 @@ module.exports = {
         query += ', `TB-Member`.`grade`';
         query += ', DATE_FORMAT(`TB-Member`.`entry`, \'%Y-%m-%d %H:%i:%s\') AS `entry`';
         query += ', DATE_FORMAT(`TB-Member`.`update`, \'%Y-%m-%d %H:%i:%s\') AS `update`';
-        query += ', DATE_FORMAT(MAX(`TB-Session`.`Logined`), \'%Y-%m-%d %H:%i:%s\') AS`logined`';
+        query += ', DATE_FORMAT(MAX(`TB-Session`.`Logined`), \'%Y-%m-%d %H:%i:%s\') AS `logined`';
         query += ' FROM`TB-Member`';
         query += ' LEFT OUTER JOIN`TB-Session` ON`TB-Member`.`member` = `TB-Session`.`member`';
         query += ' WHERE `TB-Member`.`member` <> 1';
@@ -179,6 +179,7 @@ module.exports = {
         query += ', `TB-Member`.`name`';
         query += ', `TB-Member`.`entry`';
         query += ', `TB-Member`.`update`';
+        query += ' ORDER BY MAX(`TB-Session`.`Logined`)';
         query += ' LIMIT ?, 10;'; param.push((parseInt(PAGE) - 1) * 10);
         dbConn.query(query, param, (err, RESULT) => {
           if (err) {
