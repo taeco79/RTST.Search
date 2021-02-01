@@ -128,6 +128,7 @@ function loadMembers(page) {
     .then(function (res) { return res.json(); })
     .then(function (json) {
       try {
+        var TODAY = (new Date()).toISOString().replace(/T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, '');
         if (!checkError(json)) throw '로그인하세요.';
 
         if (json.data.length === 0) throw '데이터가 존재하지 않습니다.';
@@ -159,13 +160,18 @@ function loadMembers(page) {
           document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.grade === 9 ? '관리자' : '일반';
 
           document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
-          document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.entry;
+          document.querySelector('table > tbody > tr:last-child > td:last-child').setAttribute('align', 'center');
+          document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.entry.match(TODAY) === null ? item.entry.replace(/\s\d{2}:\d{2}:\d{2}$/, '') : item.entry.replace(/^\d{4}-\d{2}-\d{2}\s/, '');
 
           document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
-          document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.update;
+          document.querySelector('table > tbody > tr:last-child > td:last-child').setAttribute('align', 'center');
+          document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.update.match(TODAY) === null ? item.update.replace(/\s\d{2}:\d{2}:\d{2}$/, '') : item.update.replace(/^\d{4}-\d{2}-\d{2}\s/, '');
 
           document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
-          document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.logined;
+          document.querySelector('table > tbody > tr:last-child > td:last-child').setAttribute('align', 'center');
+          console.log(item.logined);
+          if (item.logined !== null)
+            document.querySelector('table > tbody > tr:last-child > td:last-child').innerText = item.logined.match(TODAY) === null ? item.logined.replace(/\s\d{2}:\d{2}:\d{2}$/, '') : item.logined.replace(/^\d{4}-\d{2}-\d{2}\s/, '');
 
           document.querySelector('table > tbody > tr:last-child').appendChild(document.createElement('td'));
           document.querySelector('table > tbody > tr:last-child > td:last-child').appendChild(document.createElement('button'));

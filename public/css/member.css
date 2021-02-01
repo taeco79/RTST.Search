@@ -50,6 +50,8 @@ button {
 }
 button:not(:disabled) + button:not(:disabled) { margin-left: 0.25rem; }
 
+input + label { margin-left: 0.25rem; }
+
 table { width: 100%; margin-bottom: 1rem; }
 table * {
   font-style: normal;
@@ -77,7 +79,7 @@ tr > td:last-child { text-align: center; }
 
 tfoot { display: none; }
 
-thead input[type="text"] {
+thead input:not([type="radio"]) {
   height: 1.75rem;
   background: #FFFFFF;
   border: 1px solid #DDDDDD;
