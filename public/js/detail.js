@@ -119,28 +119,30 @@ function getNews(keyword, limit, page) {
   fetch('/news/' + keyword + '/' + limit + '/' + page)
     .then(function (res) { return res.json(); })
     .then(function (json) {
-      if (checkError(json)) {
-        json.data.items.forEach(function (item) {
-          document.querySelector('#news').appendChild(document.createElement('li'));
-          document.querySelector('#news > li:last-child').appendChild(document.createElement('a'));
-          // document.querySelector('#news > li:last-child > a').appendChild(document.createTextNode(item.title));
-          document.querySelector('#news > li:last-child > a').innerHTML = item.title;
-          document.querySelector('#news > li:last-child > a').setAttribute('target', '_blank');
-          document.querySelector('#news > li:last-child > a').setAttribute('href', item.link);
-          document.querySelector('#news > li:last-child').appendChild(document.createElement('span'));
-          document.querySelector('#news > li:last-child > span').appendChild(document.createTextNode((new Date(item.pubDate)).toISOString().replace(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.\d+Z/, '$1-$2-$3 $4:$5:$6')));
-          document.querySelector('#news > li:last-child').appendChild(document.createElement('p'));
-          // document.querySelector('#news > li:last-child > p').appendChild(document.createTextNode(item.description));
-          document.querySelector('#news > li:last-child > p').classList.add('ellipsis-1');
-          document.querySelector('#news > li:last-child > p').innerHTML = item.description;
-        });
-        showPaging(json.data.total, json.data.start < limit ? 1 : parseInt(json.data.start / limit) + 1);
-      } else {
-        console.log('Here');
-      }
+      if (!checkError(json)) throw new Error('err');
+      if (json.data.errorMessage !== undefined) throw new Error('errNaverAPIAuth');
+      if (json.data.items.length === 0) throw new Error('none');
+
+      document.querySelector('#news').removeAttribute('class');
+      json.data.items.forEach(function (item) {
+        document.querySelector('#news').appendChild(document.createElement('li'));
+        document.querySelector('#news > li:last-child').appendChild(document.createElement('a'));
+        // document.querySelector('#news > li:last-child > a').appendChild(document.createTextNode(item.title));
+        document.querySelector('#news > li:last-child > a').innerHTML = item.title;
+        document.querySelector('#news > li:last-child > a').setAttribute('target', '_blank');
+        document.querySelector('#news > li:last-child > a').setAttribute('href', item.link);
+        document.querySelector('#news > li:last-child').appendChild(document.createElement('span'));
+        document.querySelector('#news > li:last-child > span').appendChild(document.createTextNode((new Date(item.pubDate)).toISOString().replace(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.\d+Z/, '$1-$2-$3 $4:$5:$6')));
+        document.querySelector('#news > li:last-child').appendChild(document.createElement('p'));
+        // document.querySelector('#news > li:last-child > p').appendChild(document.createTextNode(item.description));
+        document.querySelector('#news > li:last-child > p').classList.add('ellipsis-1');
+        document.querySelector('#news > li:last-child > p').innerHTML = item.description;
+      });
+      showPaging(json.data.total, json.data.start < limit ? 1 : parseInt(json.data.start / limit) + 1);
     })
     .catch(function (err) {
-      console.log('News', 'catch', err);
+      document.querySelector('#news').classList.add(err.message);
+      showPaging(1, 1);
     });
 }
 

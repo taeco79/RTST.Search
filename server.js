@@ -649,8 +649,8 @@ app.get("/news/:keyword/:limit/:page", (req, res) => {
           fetch(url, {
             method: 'GET'
             , headers: {
-              'X-Naver-Client-Id': 'OT3kieLnav57fVOBXHZN'
-              , 'X-Naver-Client-Secret': 'MZMHVMKiIJ'
+              'X-Naver-Client-Id': process.env.NAVER_CLIENT_ID
+              , 'X-Naver-Client-Secret': process.env.NAVER_CLIENT_SECRET
             }
           })
             .then(data => { return data.json(); })
@@ -1119,24 +1119,36 @@ app.get("*", (req, res) => {
     });
 });
 
-if (typeof (process.env.API) !== 'undefined') {
+try {
+  if (process.env.NAVER_CLIENT_ID === undefined)
+    throw new Error('Does not have an NAVER CLIENT ID.');
+  console.log('NAVER CLIENT ID >> ', process.env.NAVER_CLIENT_ID);
+
+  if (process.env.NAVER_CLIENT_SECRET === undefined)
+    throw new Error('Does not have an NAVER CLIENT SECRET.');
+  console.log('NAVER CLIENT SECRET >> ', process.env.NAVER_CLIENT_SECRET);
+
+  if (process.env.API === undefined)
+    throw new Error('Does not have an API address.');
   console.log('API Address >> ', process.env.API);
+
   // set port, listen for requests
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
   });
-} else {
+} catch (err) {
   console.log("");
   console.log("");
   console.log("");
   console.log("");
   console.log("");
-  console.log('Does not have an API address.');
+  console.log(err.message);
   console.log("");
   console.log("");
   console.log("");
   console.log("");
   console.log("");
   process.exit();
+
 }
