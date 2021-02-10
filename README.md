@@ -5,47 +5,47 @@
 # 1. 패키지 업데이트
 $ sudo apt update
 ```
-![결과 화면](./public/img/snapshot/01.png)
+![결과 화면](./public/img/snapshot/01.jpg)
 ```bash 
 # 2. 패키지 업그레이드
 $ sudo apt upgrade
 ```
-![결과 화면](./public/img/snapshot/02.png)
+![결과 화면](./public/img/snapshot/02.jpg)
 ```bash 
 # 3. 
 $ sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 ```
-![결과 화면](./public/img/snapshot/03.png)
+![결과 화면](./public/img/snapshot/03.jpg)
 ```bash 
 # 4. Docker 설치 키 등록
 $ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 ```
-![결과 화면](./public/img/snapshot/04.png)
+![결과 화면](./public/img/snapshot/04.jpg)
 ```bash 
 # 5. Docker Repo 등록
 $ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 ```
-![결과 화면](./public/img/snapshot/05.png)
+![결과 화면](./public/img/snapshot/05.jpg)
 ```bash 
 # 6. 전체 패키지 업데이트 및 Docker, Docker 관련 패키지 설치
 $ sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io
 ```
-![결과 화면](./public/img/snapshot/06.png)
+![결과 화면](./public/img/snapshot/06.jpg)
 ```bash 
 # 7. Docker 설치 확인
 $ sudo docker -v
 ```
-![결과 화면](./public/img/snapshot/07.png)
+![결과 화면](./public/img/snapshot/07.jpg)
 ```bash 
 # 8. Docker 부팅시 자동 실행 설정 후 Docker 서비스 실행
 sudo systemctl enable docker && service docker start
 ```
-![결과 화면](./public/img/snapshot/08.png)
+![결과 화면](./public/img/snapshot/08.jpg)
 ```bash 
 # 9. Docker 서비스 동작 확인
 sudo systemctl status docker
 ```
-![결과 화면](./public/img/snapshot/09.png)
+![결과 화면](./public/img/snapshot/09.jpg)
 
 ## 2. [Docker-Compose](https://github.com/docker/compose/releases) 설치
 ```bash
@@ -54,18 +54,18 @@ sudo systemctl status docker
 # 1. docker-compose 다운로드
 $ sudo curl -L https://github.com/docker/compose/releases/download/1.28.0-rc2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 ```
-![결과 화면](./public/img/snapshot/10.png)
+![결과 화면](./public/img/snapshot/10.jpg)
 ```bash 
 
 # 2. docker-compose 실행 권한 부여
 sudo chmod +x /usr/local/bin/docker-compose
 ```
-![실행 결과](./public/img/snapshot/11.png)
+![실행 결과](./public/img/snapshot/11.jpg)
 ```bash
 # 3. docker-compose 설치 확인
 $ sudo docker-compose --version
 ```
-![실행 결과](./public/img/snapshot/12.png)
+![실행 결과](./public/img/snapshot/12.jpg)
 
 
 ## 3. Docker 컨테이너에 고정 IP(컨터네이 내부용) 할당을 위해, 가상 네트워크 설정
@@ -172,7 +172,7 @@ networks:
 ```bash
 ~/web$ sudo docker load -i search.v0.6.7.img
 ```
-![실행 결과](./public/img/snapshot/13.png)
+![실행 결과](./public/img/snapshot/13.jpg)
 
 #### 5.1.3. docker-compose.yml 버전 변경.
 ```bash
@@ -194,16 +194,16 @@ services:
 ```bash
 ~/web$ sudo docker-compose down
 ```
-![실행 결과](./public/img/snapshot/14.png)
+![실행 결과](./public/img/snapshot/14.jpg)
 
 #### 5.1.3. 컨테이너 시작(데몬)
 ```bash
 ~/web$ sudo docker-compose up -d
 ```
-![실행 결과](./public/img/snapshot/15.png)
+![실행 결과](./public/img/snapshot/15.jpg)
 
 #### 5.1.4. 컨테이너 동작 상태
 ```bash
 ~/web$ sudo docker ps
 ```
-![실행 결과](./public/img/snapshot/16.png)
+![실행 결과](./public/img/snapshot/16.jpg)
