@@ -110,6 +110,41 @@ app.all("/logout", (req, res) => {
   res.redirect('/');
 });
 
+app.get("/sample", (req, res) => {
+  let TYPE = parseInt(Math.random() * 2);
+  let TYPES = ['특허등록번호', 'NICE업체코드'];
+
+  let RESULT = {
+    input: {
+      type: TYPES[TYPE],
+      value: !TYPE ? '101989390' : '058246'
+    },
+    output: {
+      status: 'Found',
+      type: TYPES[(TYPE + 1) % 2],
+      value: []
+    }
+  };
+
+  var query = '';
+  var param = [parseInt(Math.random() * 200)];
+  if (TYPE) query = 'SELECT `patent` AS `key` FROM `TB-Patent` LIMIT 0, ?';
+  else query = 'SELECT `nice` AS `key` FROM `TB-Company` LIMIT 0, ?';
+
+  db_conn.query(query, param, (err, RECORDS) => {
+    if (err) res.json({ error: 9, message: err.message });
+    else {
+      console.log(RECORDS);
+
+      RECORDS.forEach(RECORD => {
+        RESULT.output.value.push(RECORD.key);
+      });
+
+      res.json(RESULT);
+    }
+  });
+});
+
 app.get("/search", (req, res) => {
   // console.log(req.params.page);
   fn.logined(db_conn, req)
@@ -139,14 +174,35 @@ app.get("/search", (req, res) => {
           });
         })
         .catch(err => {
-          // console.log(RESULT);
-          fs.readFile('./public/htm/search.htm', 'utf8', function (err, HTML) {
-            HTML = HTML.toString().replace(/##RESULT##/gi, JSON.stringify({ "input": { "type": null, "value": req.query.q }, "output": { "status": "Not working", "type": null, "value": [] } }));
+          if (req.headers.host.match(/^localhost:3000$/)) {
+            let RESULT = JSON.parse('{ "input": { "type": "특허등록번호", "value": "101989390" }, "output": { "status": "Found", "type": "NICE업체코드", "value": ["HO2986", "202426", "L40237", "HP6372", "176093", "HJ6288", "G26965", "L76325", "475155", "831115", "C48279", "H93914", "H72892", "CC4085", "823236", "HC9035", "041045", "L92976", "861158", "088960", "F96864", "H92567", "206013", "G28921", "HS6426", "J91074", "C46704", "HD3299", "L08300", "284705", "JH6491", "677479", "132482", "JA9119", "E63391", "IZ7425", "L63498", "JY5036", "HN5892", "191728", "HW1227", "126694", "L03089", "483918", "150037", "IO3976", "I49189", "G10317", "108704", "C20450", "L09268", "E60265", "HS5910", "M37492", "999896", "C28425", "M22335", "500172", "166524", "210457", "E53288", "HK2545", "041557", "175251", "680208", "HH7665", "M10687", "H19577", "J14974", "G54367", "IO8605", "E39017", "J15345", "150348", "E10541", "L10029", "F08815", "384112", "G15094", "HD4991", "C20699", "242727", "IW6388", "094838", "393088", "I53295", "240450", "785288", "I67217", "J77118", "350656", "L58505", "J64125", "085490", "F34203", "C63178", "G53284", "H45261", "C20293", "HK5712"] } }');
+            fs.readFile('./public/htm/search.htm', 'utf8', function (err, HTML) {
+              // res.writeHead(200, { 'Content-Type': 'application/json' });
+              // res.write(JSON.stringify({ error: 0, message: 'Sucess', data: RESULT }));
 
-            HTML = HTML.toString().replace(/##search##/gi, req.query.q);
-            HTML = HTML.replace(/##Message##/gi, '특허 검색 시스템이 동작하지 않습니다.');
-            res.end(HTML);
-          });
+              HTML = HTML.toString().replace(/##RESULT##/gi, JSON.stringify(RESULT));
+
+              HTML = HTML.toString().replace(/##search##/gi, req.query.q);
+              if (RESULT.output.status !== 'Found')
+                HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으나, 결과가 존재하지 않습니다.');
+              else
+                if (RESULT.output.type === '특허등록번호')
+                  HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 특허</b>를 찾았습니다.');
+                else if (['기업코드', 'NICE업체코드'].includes(RESULT.output.type))
+                  HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 기업</b>을 찾았습니다.');
+                else
+                  HTML = HTML.replace(/##Message##/gi, RESULT.input.type + '로 검색했으며, <b>' + RESULT.output.value.length + '개의 ' + RESULT.output.type + '</b>을 찾았습니다.');
+              res.end(HTML);
+            });
+          } else {
+            fs.readFile('./public/htm/search.htm', 'utf8', function (err, HTML) {
+              HTML = HTML.toString().replace(/##RESULT##/gi, JSON.stringify({ "input": { "type": null, "value": req.query.q }, "output": { "status": "Not working", "type": null, "value": [] } }));
+
+              HTML = HTML.toString().replace(/##search##/gi, req.query.q);
+              HTML = HTML.replace(/##Message##/gi, '특허 검색 시스템이 동작하지 않습니다.');
+              res.end(HTML);
+            });
+          }
         });
     })
     .catch((err) => {
@@ -171,11 +227,12 @@ app.get("/summary/:type/:value", (req, res) => {
         else query += ' WHERE `applicationNumber` = ?';
         param = [req.params.value];
 
-      } else if (['사업자등록번호', '기업코드'].includes(req.params.type)) {
+      } else if (['사업자등록번호', '기업코드', 'NICE업체코드'].includes(req.params.type)) {
         query = 'SELECT *';
         query += ' FROM `TB-Company`';
         if (req.params.type === '사업자등록번호') query += ' WHERE `registerNumber` = ?';
-        else query += ' WHERE `code` = ?';
+        if (req.params.type === '기업코드') query += ' WHERE `code` = ?';
+        else query += ' WHERE `nice` = ?';
         param = [req.params.value];
       }
 
